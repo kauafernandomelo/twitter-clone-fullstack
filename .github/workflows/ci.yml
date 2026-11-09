@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# um push novo no mesmo PR cancela a execução anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, tipos, testes e build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # o mesmo Postgres de teste do docker-compose (porta 5435), descartável
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: twitter
+          POSTGRES_PASSWORD: twitter
+          POSTGRES_DB: twitter_test
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd "pg_isready -U twitter -d twitter_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # usado pelo "prisma generate" do postinstall; os testes leem apps/api/.env.test
+      DATABASE_URL: postgresql://twitter:twitter@localhost:5435/twitter_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  docker:
+    name: Imagem Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build da imagem de produção
+        run: docker build -t twitter-clone:ci .
