@@ -32,10 +32,18 @@ export const createTweetSchema = z
       .array(tweetMediaInputSchema)
       .max(TWEET_MAX_MEDIA, `No máximo ${TWEET_MAX_MEDIA} imagens por post`)
       .default([]),
+    /** responder a este post */
+    replyToId: z.uuid().optional(),
+    /** citar este post */
+    quoteOfId: z.uuid().optional(),
   })
   .refine((tweet) => tweet.content.length > 0 || tweet.media.length > 0, {
     message: 'Escreva algo ou adicione uma imagem',
     path: ['content'],
+  })
+  .refine((tweet) => !(tweet.replyToId && tweet.quoteOfId), {
+    message: 'Um post não pode ser resposta e citação ao mesmo tempo',
+    path: ['quoteOfId'],
   });
 
 // Edição muda só o texto. Se o post não tiver imagem, o texto não pode ficar vazio (checado na API).
@@ -59,15 +67,59 @@ export type TweetAuthor = {
 
 export type TweetMedia = { url: string; width: number; height: number };
 
-export type Tweet = {
+/** Post citado, mostrado dentro de outro post (sem estatísticas nem ações) */
+export type QuotedTweet = {
   id: string;
+  content: string;
+  media: TweetMedia[];
+  author: TweetAuthor;
+  createdAt: string;
+};
+
+export type TweetStats = {
+  replies: number;
+  /** reposts simples */
+  retweets: number;
+  /** citações */
+  quotes: number;
+  likes: number;
+};
+
+/** O que quem está vendo já fez com este post */
+export type TweetViewerState = {
+  liked: boolean;
+  retweeted: boolean;
+  bookmarked: boolean;
+};
+
+export type Tweet = {
+  /** id do post original (é o que se curte, responde, abre...) */
+  id: string;
+  /**
+   * id da "entrada" na lista. Num repost, é o id da linha do repost e não do original:
+   * serve de chave única na lista (o mesmo post pode aparecer como original e como repost).
+   */
+  entryId: string;
   content: string;
   media: TweetMedia[];
   author: TweetAuthor;
   createdAt: string;
   /** null = nunca editado */
   editedAt: string | null;
+  /** é resposta; replyTo null aqui significa que o post respondido foi apagado */
+  isReply: boolean;
+  replyTo: { id: string; author: { username: string } } | null;
+  /** é citação; quote null aqui significa que o post citado foi apagado */
+  isQuote: boolean;
+  quote: QuotedTweet | null;
+  stats: TweetStats;
+  viewer: TweetViewerState;
+  /** preenchido quando a entrada é um repost ("Fulano repostou") */
+  repostedBy: TweetAuthor | null;
 };
+
+/** Contexto de uma conversa: os posts acima (do mais antigo ao mais recente) */
+export type ThreadResponse = { ancestors: Tweet[] };
 
 export type TweetResponse = { tweet: Tweet };
 
