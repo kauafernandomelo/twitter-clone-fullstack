@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { Avatar } from '@/components/Avatar';
 import { formatFullDate, formatTweetTime } from '@/lib/date';
 
+import { RichText } from './RichText';
 import { TweetMediaGrid } from './TweetMediaGrid';
 
 /** Post citado, embutido dentro de outro (clicável, sem ações). */
@@ -42,9 +43,12 @@ export function QuotedTweetCard({ quote }: { quote: QuotedTweet | null }) {
           </time>
         </div>
         {quote.content && (
-          <p className="mt-1 pb-3 text-[15px] leading-5 break-words whitespace-pre-wrap">
-            {quote.content}
-          </p>
+          // o card inteiro já é um link: o texto só ganha cor, sem links aninhados
+          <RichText
+            text={quote.content}
+            links={false}
+            className="mt-1 pb-3 text-[15px] leading-5"
+          />
         )}
       </div>
       {quote.media.length > 0 && (

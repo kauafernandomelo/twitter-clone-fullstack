@@ -12,6 +12,7 @@ import { tweetUrl } from '../utils';
 import { EditedLabel } from './EditedLabel';
 import { QuotedTweetCard } from './QuotedTweetCard';
 import { ReplyingTo } from './ReplyingTo';
+import { RichText } from './RichText';
 import { TweetActionBar } from './TweetActionBar';
 import { TweetMediaGrid } from './TweetMediaGrid';
 import { TweetMenu } from './TweetMenu';
@@ -97,9 +98,7 @@ export function TweetCard({ tweet, threadLine, hideReplyingTo, preview }: TweetC
           </header>
 
           {!hideReplyingTo && <ReplyingTo tweet={tweet} />}
-          {tweet.content && (
-            <p className="text-[15px] leading-5 break-words whitespace-pre-wrap">{tweet.content}</p>
-          )}
+          {tweet.content && <RichText text={tweet.content} className="text-[15px] leading-5" />}
           <TweetMediaGrid media={tweet.media} />
           {tweet.isQuote && <QuotedTweetCard quote={tweet.quote} />}
           {!preview && <TweetActionBar tweet={tweet} />}

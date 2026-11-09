@@ -105,14 +105,20 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Interagir pelo id de um repost age no post original
 - [x] Testes: 15 novos na API + 10 novos no front
 
-## Fase 6 — Busca + Hashtags
+## Fase 6 — Busca + Hashtags ✅
 
-- [ ] Extração de #hashtags e @menções ao criar o tweet
-- [ ] Links clicáveis para @ e # no texto do tweet
-- [ ] Busca de usuários e tweets (página Explorar)
-- [ ] Página de #hashtag
-- [ ] "Assuntos do momento"
-- [ ] Testes
+- [x] Parser de texto no `packages/shared` (#hashtags com acento, @menções, links), igual na API e no front
+- [x] #hashtags, @menções e URLs clicáveis no texto dos posts (sem links aninhados dentro de citações)
+- [x] Tabelas `tweet_hashtags` e `mentions`, sincronizadas numa transação ao criar e editar o post
+- [x] **Busca full-text do Postgres**: dicionário português (stemming), sem acentos (`unaccent`), índice GIN mantido por trigger
+- [x] Página **Explorar** com abas Destaques (relevância, `ts_rank`), Mais recentes e Pessoas; o estado fica na URL
+- [x] Busca de "#tag" vai direto para a hashtag exata
+- [x] Busca de pessoas por início do @ ou parte do nome
+- [x] Página de **#hashtag** (`/hashtag/:tag`)
+- [x] **Assuntos do momento**: hashtags mais usadas nas últimas 24h (coluna lateral e Explorar)
+- [x] Caixa de busca funcional na coluna lateral
+- [x] **Autocomplete de @menções** no compositor (↑↓, Enter/Tab, Esc, mouse; padrão ARIA combobox)
+- [x] Testes: 10 novos na API + 8 novos no front
 
 ## Fase 7 — Notificações
 
@@ -168,4 +174,8 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Repost como linha em `tweets`** (Fase 5): a timeline continua sendo uma lista só, paginada por id, sem juntar duas fontes. O `entryId` diferencia a entrada do repost do post original na mesma lista.
 - **Resposta/citação de post apagado** (Fase 5): `reply_to_id`/`quote_of_id` viram NULL (`ON DELETE SET NULL`), mas `is_reply`/`is_quote` continuam true para a interface mostrar "post indisponível". Reposts são apagados junto com o original (`CASCADE`).
 - **Contador de "Reposts"** (Fase 5): nas ações, soma reposts e citações (como no Twitter); na página do post aparecem separados.
+- **Full-text com trigger, não coluna gerada** (Fase 6): `unaccent` não é IMMUTABLE, então há um wrapper `immutable_unaccent` e um trigger preenche `search_vector`. A coluna é `Unsupported("tsvector")` no schema, para o Prisma não tentar apagá-la (o `migrate diff` do schema contra o banco sai vazio).
+- **Migrations fora do modo interativo** (Fase 5/6): o SQL sai de `prisma migrate diff`, as partes que o Prisma não expressa (CHECK, extensão, função, trigger) são escritas à mão, e tudo é aplicado com `migrate deploy`.
+- **Busca por relevância pagina por offset** (Fase 6): não existe cursor natural num ranking; limitado a 1000 resultados. "Mais recentes" pagina por id, como o resto do app.
+- **Hashtags de posts antigos** (Fase 6): só os posts criados ou editados depois desta fase têm hashtags indexadas. A busca full-text cobre todos (a migration preencheu o índice).
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

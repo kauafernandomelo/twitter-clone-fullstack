@@ -13,7 +13,9 @@ import { cn } from '@/lib/cn';
 import { validateImageFile } from '@/lib/images';
 
 import { useCreateTweet } from '../api';
+import { useMentionAutocomplete } from '../hooks/use-mention-autocomplete';
 import { CharCounter } from './CharCounter';
+import { MentionSuggestions } from './MentionSuggestions';
 import { QuotedTweetCard } from './QuotedTweetCard';
 
 type Attachment = { id: string; file: File; previewUrl: string };
@@ -42,6 +44,7 @@ export function TweetComposer({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const textareaRef = useAutosize(text);
+  const mentions = useMentionAutocomplete(text, setText, textareaRef);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaId = useId();
 
@@ -134,23 +137,35 @@ export function TweetComposer({
         <label htmlFor={textareaId} className="sr-only">
           Texto do post
         </label>
-        <textarea
-          ref={textareaRef}
-          id={textareaId}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder={
-            replyTo
-              ? 'Poste sua resposta'
-              : quote
-                ? 'Adicione um comentário'
-                : 'O que está acontecendo?'
-          }
-          autoFocus={autoFocus}
-          rows={1}
-          disabled={submitting}
-          className="w-full resize-none bg-transparent py-3 text-xl placeholder:text-muted focus:outline-none"
-        />
+        <div className="relative">
+          <textarea
+            ref={textareaRef}
+            id={textareaId}
+            value={text}
+            {...mentions.textareaProps}
+            placeholder={
+              replyTo
+                ? 'Poste sua resposta'
+                : quote
+                  ? 'Adicione um comentário'
+                  : 'O que está acontecendo?'
+            }
+            autoFocus={autoFocus}
+            rows={1}
+            disabled={submitting}
+            className="w-full resize-none bg-transparent py-3 text-xl placeholder:text-muted focus:outline-none"
+          />
+          {mentions.open && (
+            <MentionSuggestions
+              listboxId={mentions.listboxId}
+              users={mentions.users}
+              active={mentions.active}
+              optionId={mentions.optionId}
+              onHover={mentions.setActiveIndex}
+              onSelect={mentions.select}
+            />
+          )}
+        </div>
 
         {attachments.length > 0 && (
           <ul className={cn('mb-3 grid gap-2', attachments.length > 1 && 'grid-cols-2')}>

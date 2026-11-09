@@ -32,6 +32,7 @@ model User {
   followers     Follow[]       @relation("UserFollowers")
   likes         Like[]
   bookmarks     Bookmark[]
+  mentions      Mention[]
 
   @@map("users")
 }
@@ -46,22 +47,27 @@ model User {
 // - citação (quote_of_id + is_quote), com a mesma lógica
 // - repost (retweet_of_id): sem texto próprio, apagado junto com o original
 model Tweet {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  authorId    String    @map("author_id") @db.Uuid
-  content     String    @default("") @db.VarChar(280)
-  replyToId   String?   @map("reply_to_id") @db.Uuid
-  isReply     Boolean   @default(false) @map("is_reply")
-  quoteOfId   String?   @map("quote_of_id") @db.Uuid
-  isQuote     Boolean   @default(false) @map("is_quote")
-  retweetOfId String?   @map("retweet_of_id") @db.Uuid
-  editedAt    DateTime? @map("edited_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id           String                   @id @default(uuid(7)) @db.Uuid
+  authorId     String                   @map("author_id") @db.Uuid
+  content      String                   @default("") @db.VarChar(280)
+  replyToId    String?                  @map("reply_to_id") @db.Uuid
+  isReply      Boolean                  @default(false) @map("is_reply")
+  quoteOfId    String?                  @map("quote_of_id") @db.Uuid
+  isQuote      Boolean                  @default(false) @map("is_quote")
+  retweetOfId  String?                  @map("retweet_of_id") @db.Uuid
+  editedAt     DateTime?                @map("edited_at")
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+  // Índice de busca (full-text em português, sem acentos). Preenchido por um trigger no
+  // banco a cada INSERT/UPDATE do conteúdo; o Prisma só precisa saber que a coluna existe.
+  searchVector Unsupported("tsvector")? @map("search_vector")
 
-  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   media     TweetMedia[]
   likes     Like[]
   bookmarks Bookmark[]
+  hashtags  TweetHashtag[]
+  mentions  Mention[]
 
   replyTo   Tweet?  @relation("Replies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   Tweet[] @relation("Replies")
@@ -76,6 +82,7 @@ model Tweet {
   @@index([replyToId, id])
   @@index([quoteOfId])
   @@index([retweetOfId])
+  @@index([searchVector], type: Gin, map: "tweets_search_vector_idx")
   @@map("tweets")
 }
 
@@ -160,4 +167,32 @@ model Bookmark {
   @@index([tweetId])
   @@index([userId, id(sort: Desc)])
   @@map("bookmarks")
+}
+
+// Hashtags extraídas do texto do post (sem o #, em minúsculas).
+// created_at copia a data do post: é por ela que os "Assuntos do momento" filtram as últimas 24h.
+model TweetHashtag {
+  tweetId   String   @map("tweet_id") @db.Uuid
+  tag       String   @db.VarChar(100)
+  createdAt DateTime @map("created_at")
+
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@id([tweetId, tag])
+  @@index([tag, tweetId(sort: Desc)])
+  @@index([createdAt])
+  @@map("tweet_hashtags")
+}
+
+// @menções a usuários que existem (base das notificações de menção na Fase 7)
+model Mention {
+  tweetId String @map("tweet_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([tweetId, userId])
+  @@index([userId])
+  @@map("mentions")
 }
