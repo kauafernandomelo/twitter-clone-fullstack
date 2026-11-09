@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 
+import { RealtimeNotifications } from '@/features/notifications/components/RealtimeNotifications';
 import { ComposeProvider } from '@/features/tweets/components/ComposeProvider';
 
 import { MobileNav } from './MobileNav';
@@ -17,6 +18,7 @@ export function AppLayout() {
         </main>
         <RightColumn />
         <MobileNav />
+        <RealtimeNotifications />
       </div>
     </ComposeProvider>
   );
