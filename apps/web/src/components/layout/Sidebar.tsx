@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/Button';
 import { useCurrentUser } from '@/features/auth/api';
+import { MessagesBadge } from '@/features/messages/components/MessagesBadge';
 import { UnreadBadge } from '@/features/notifications/components/UnreadBadge';
 import { useOpenCompose } from '@/features/tweets/compose-context';
 import { cn } from '@/lib/cn';
@@ -35,6 +36,7 @@ export function Sidebar() {
                   <span className="relative">
                     <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
                     {to === '/notifications' && <UnreadBadge />}
+                    {to === '/messages' && <MessagesBadge />}
                   </span>
                   <span className={cn('hidden text-xl xl:inline', isActive && 'font-bold')}>
                     {label}

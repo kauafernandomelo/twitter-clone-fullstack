@@ -3,10 +3,18 @@
 type Handler = (...args: unknown[]) => void;
 const handlers = new Map<string, Set<Handler>>();
 
+/** eventos que o app mandou para o "servidor" (para os testes conferirem) */
+export const sentEvents: { event: string; payload: unknown }[] = [];
+
 export function connectSocket() {}
+
+export function emitToServer(event: string, payload: unknown) {
+  sentEvents.push({ event, payload });
+}
 
 export function disconnectSocket() {
   handlers.clear();
+  sentEvents.length = 0;
 }
 
 export function onSocketEvent(event: string, handler: Handler) {

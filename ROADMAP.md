@@ -135,13 +135,21 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Abrir a página marca tudo como lido (as outras abas abertas também zeram)
 - [x] Testes: 12 novos na API (inclusive socket real) + 5 novos no front
 
-## Fase 8 — Mensagens diretas
+## Fase 8 — Mensagens diretas ✅
 
-- [ ] Models `Conversation`, `ConversationParticipant`, `Message`
-- [ ] Lista de conversas + nova conversa
-- [ ] Chat em tempo real (Socket.IO)
-- [ ] Indicador de lida
-- [ ] Testes
+- [x] Models `Conversation` (com `pair_key` única: uma conversa por par de pessoas, garantido no banco), `ConversationParticipant` e `Message`
+- [x] Constraint `CHECK`: mensagem precisa ter texto ou imagem
+- [x] Qualquer pessoa pode iniciar conversa (pelo modal "Nova mensagem" ou pelo envelope no perfil)
+- [x] Quem não participa recebe 404 em tudo (não revela nem que a conversa existe)
+- [x] Caixa de entrada com a última mensagem, hora e não lidas destacadas
+- [x] Chat com balões (meus à direita), hora por sequência de mensagens e rolagem que "gruda" embaixo (`flex-col-reverse`), carregando as antigas ao subir
+- [x] Texto (até 1000 caracteres, com links) e **imagens** (upload direto no Cloudinary, pasta `message` validada na API)
+- [x] **Tempo real**: a mensagem chega na hora (o evento leva a mensagem, sem nova request)
+- [x] **"Visto"** na minha última mensagem quando a outra pessoa leu
+- [x] **"digitando…"** repassado pelo servidor só entre participantes (com limite de tempo se o aviso de parar se perder)
+- [x] Enter envia, Shift+Enter quebra a linha
+- [x] Bolinha de conversas não lidas no ícone de Mensagens
+- [x] Testes: 10 novos na API (inclusive socket real) + 11 novos no front
 
 ## Fase 9 — Polimento
 
@@ -188,4 +196,6 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Agrupamento na leitura, não na escrita** (Fase 7): cada ação é uma linha simples (fácil de desfazer); a query agrupa com `GROUP BY` sobre uma chave calculada. O cursor é o id mais recente do grupo; um grupo que recebe uma curtida nova sobe para o topo, como no Twitter.
 - **Socket.IO só avisa, não carrega dados** (Fase 7): o evento diz "mudou algo" e o front recarrega via REST. Uma única fonte de verdade, sem duplicar a serialização no socket.
 - **Sem Web Push por enquanto** (Fase 7): notificação com a aba fechada exige service worker, chaves VAPID e HTTPS; faz mais sentido depois do deploy (Fase 10).
+- **No chat, o socket leva a mensagem** (Fase 8): nas notificações o evento só avisa "mudou"; no chat, a mensagem vai junto para aparecer instantaneamente. Ela entra no cache sem duplicar, porque chega pela resposta do POST e pelo eco do socket.
+- **Listeners de socket independentes da conexão** (Fase 8): uma página aberta direto pela URL registra listeners antes de o layout abrir a conexão (os efeitos do React rodam de dentro para fora). O `lib/socket` guarda os listeners e os liga quando a conexão nasce. Bug encontrado na checagem visual, coberto por teste.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

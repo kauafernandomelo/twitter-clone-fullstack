@@ -28,13 +28,15 @@ model User {
 
   refreshTokens RefreshToken[]
   tweets        Tweet[]
-  following     Follow[]       @relation("UserFollowing")
-  followers     Follow[]       @relation("UserFollowers")
+  following     Follow[]                  @relation("UserFollowing")
+  followers     Follow[]                  @relation("UserFollowers")
   likes         Like[]
   bookmarks     Bookmark[]
   mentions      Mention[]
-  notifications Notification[] @relation("NotificationRecipient")
-  actedIn       Notification[] @relation("NotificationActor")
+  notifications Notification[]            @relation("NotificationRecipient")
+  actedIn       Notification[]            @relation("NotificationActor")
+  conversations ConversationParticipant[]
+  messages      Message[]
 
   @@map("users")
 }
@@ -232,4 +234,49 @@ model Notification {
   @@index([recipientId, readAt])
   @@index([actorId, type, tweetId])
   @@map("notifications")
+}
+
+// Conversa 1-a-1. pair_key = os dois ids em ordem ("a:b"): UNIQUE garante no banco
+// que duas pessoas têm só uma conversa entre si, mesmo com duas requests ao mesmo tempo.
+model Conversation {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  pairKey       String   @unique @map("pair_key")
+  lastMessageAt DateTime @default(now()) @map("last_message_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+// last_read_at: até quando a pessoa já leu. É a base do "Visto" e das não lidas.
+model ConversationParticipant {
+  conversationId String    @map("conversation_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  lastReadAt     DateTime? @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId       String   @map("sender_id") @db.Uuid
+  content        String   @default("") @db.VarChar(1000)
+  imageUrl       String?  @map("image_url")
+  imageWidth     Int?     @map("image_width")
+  imageHeight    Int?     @map("image_height")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, id(sort: Desc)])
+  @@map("messages")
 }

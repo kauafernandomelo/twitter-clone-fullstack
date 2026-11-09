@@ -18,15 +18,18 @@ describe('layout', () => {
     expect(nav.getByRole('link', { name: 'Perfil' })).toHaveAttribute('href', '/ana_souza');
   });
 
-  it('itens de fases futuras abrem a página "Em breve"', async () => {
-    mockApi(loggedIn);
-    renderApp('/home');
+  it('os itens da navegação levam às páginas', async () => {
+    mockApi({
+      ...loggedIn,
+      'GET /conversations': { status: 200, body: { items: [], nextCursor: null } },
+    });
+    const { router } = renderApp('/home');
 
     const nav = within(await screen.findByRole('navigation', { name: 'Principal' }));
     await userEvent.click(nav.getByRole('link', { name: 'Mensagens' }));
 
     expect(await screen.findByRole('heading', { name: 'Mensagens' })).toBeVisible();
-    expect(screen.getByText('Em breve')).toBeVisible();
+    expect(router.state.location.pathname).toBe('/messages');
   });
 });
 

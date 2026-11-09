@@ -2,6 +2,7 @@ import { Feather } from 'lucide-react';
 import { NavLink } from 'react-router';
 
 import { useCurrentUser } from '@/features/auth/api';
+import { MessagesBadge } from '@/features/messages/components/MessagesBadge';
 import { UnreadBadge } from '@/features/notifications/components/UnreadBadge';
 import { useOpenCompose } from '@/features/tweets/compose-context';
 
@@ -33,6 +34,7 @@ export function MobileNav() {
               <span className="relative">
                 <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
                 {to === '/notifications' && <UnreadBadge />}
+                {to === '/messages' && <MessagesBadge />}
               </span>
             )}
           </NavLink>

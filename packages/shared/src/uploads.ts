@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const uploadKindSchema = z.enum(['avatar', 'banner', 'tweet']);
+export const uploadKindSchema = z.enum(['avatar', 'banner', 'tweet', 'message']);
 export type UploadKind = z.infer<typeof uploadKindSchema>;
 
 export const uploadSignatureRequestSchema = z.object({ kind: uploadKindSchema });

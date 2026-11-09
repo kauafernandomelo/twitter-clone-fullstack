@@ -9,6 +9,7 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/Button';
 import { FollowButton } from '@/features/follows/components/FollowButton';
 import { FollowsYouBadge } from '@/features/follows/components/FollowsYouBadge';
+import { MessageButton } from '@/features/messages/components/MessageButton';
 import { withTransform } from '@/lib/cloudinary';
 
 import { EditProfileModal } from './EditProfileModal';
@@ -44,7 +45,10 @@ export function ProfileHeader({ profile, isOwnProfile }: ProfileHeaderProps) {
               Editar perfil
             </Button>
           ) : (
-            <FollowButton username={profile.username} isFollowing={profile.isFollowing} />
+            <div className="flex gap-2">
+              <MessageButton username={profile.username} />
+              <FollowButton username={profile.username} isFollowing={profile.isFollowing} />
+            </div>
           )}
         </div>
 
