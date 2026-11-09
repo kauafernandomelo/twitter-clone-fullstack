@@ -12,7 +12,17 @@ import { api, ApiError } from '@/lib/api';
 
 import { sessionQueryKey } from '../auth/api';
 
-export const profileQueryKey = (username: string) => ['users', username.toLowerCase()] as const;
+// Perfis em ['users', 'profile', ...] e listas em ['users', 'lists', ...]: prefixos distintos,
+// para "atualizar todas as listas" nunca pegar um perfil por engano (ex.: um usuário chamado "lists").
+export const userKeys = {
+  profile: (username: string) => ['users', 'profile', username.toLowerCase()] as const,
+  lists: ['users', 'lists'] as const,
+  followers: (username: string) => ['users', 'lists', 'followers', username.toLowerCase()] as const,
+  following: (username: string) => ['users', 'lists', 'following', username.toLowerCase()] as const,
+  suggestions: ['users', 'suggestions'] as const,
+};
+
+export const profileQueryKey = userKeys.profile;
 
 export function useProfile(username: string) {
   return useQuery({
