@@ -44,13 +44,15 @@ export function useUpdateProfile() {
   });
 }
 
-type CloudinaryUploadResponse = { secure_url: string };
+type CloudinaryUploadResponse = { secure_url: string; width: number; height: number };
+
+export type UploadedImage = { url: string; width: number; height: number };
 
 /**
  * Upload direto pro Cloudinary: a API só assina, o arquivo vai do navegador
  * para o Cloudinary sem passar pelo nosso servidor.
  */
-export async function uploadImage(file: Blob, kind: UploadKind): Promise<string> {
+export async function uploadImage(file: Blob, kind: UploadKind): Promise<UploadedImage> {
   const signature = await api<UploadSignature>('/uploads/signature', {
     method: 'POST',
     body: { kind },
@@ -69,5 +71,5 @@ export async function uploadImage(file: Blob, kind: UploadKind): Promise<string>
   }
 
   const data = (await res.json()) as CloudinaryUploadResponse;
-  return data.secure_url;
+  return { url: data.secure_url, width: data.width, height: data.height };
 }

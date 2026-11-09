@@ -7,6 +7,7 @@ import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { TweetPage } from '@/pages/TweetPage';
 
 // Separado do createBrowserRouter para os testes montarem as mesmas rotas em memória.
 export const routes: RouteObject[] = [
@@ -54,6 +55,7 @@ export const routes: RouteObject[] = [
           },
           // rotas estáticas acima têm prioridade sobre este parâmetro
           { path: '/:username', element: <ProfilePage /> },
+          { path: '/:username/status/:tweetId', element: <TweetPage /> },
         ],
       },
     ],
