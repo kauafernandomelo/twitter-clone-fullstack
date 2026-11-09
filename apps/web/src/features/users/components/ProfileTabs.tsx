@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useUserTweets } from '@/features/tweets/api';
 import { TweetList } from '@/features/tweets/components/TweetList';
-import { cn } from '@/lib/cn';
+import { TabBar } from '@/components/ui/TabBar';
 
 const TABS = ['Posts', 'Respostas', 'Mídia', 'Curtidas'] as const;
 type Tab = (typeof TABS)[number];
@@ -37,30 +37,14 @@ export function ProfileTabs({ username }: { username: string }) {
 
   return (
     <>
-      <div role="tablist" aria-label="Conteúdo do perfil" className="flex border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            aria-selected={active === tab}
-            onClick={() => setActive(tab)}
-            className="flex flex-1 justify-center px-4 text-[15px] transition-colors hover:bg-foreground/10"
-          >
-            <span
-              className={cn(
-                'relative py-4',
-                active === tab ? 'font-bold text-foreground' : 'font-medium text-muted',
-              )}
-            >
-              {tab}
-              {active === tab && (
-                <span className="absolute inset-x-0 bottom-0 h-1 rounded-full bg-brand" />
-              )}
-            </span>
-          </button>
-        ))}
-      </div>
+      <TabBar
+        label="Conteúdo do perfil"
+        tabs={TABS.map((tab) => ({
+          label: tab,
+          active: active === tab,
+          onSelect: () => setActive(tab),
+        }))}
+      />
       <div role="tabpanel">
         {active === 'Posts' ? (
           <PostsTab username={username} />
