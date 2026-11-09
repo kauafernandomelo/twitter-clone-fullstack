@@ -14,9 +14,28 @@ export type UserProfile = {
   bannerUrl: string | null;
   createdAt: string;
   tweetsCount: number;
+  followersCount: number;
+  followingCount: number;
+  /** quem está vendo segue este perfil */
+  isFollowing: boolean;
+  /** este perfil segue quem está vendo (selo "Segue você") */
+  followsYou: boolean;
 };
 
 export type UserProfileResponse = { user: UserProfile };
+
+// Usuário resumido, como aparece em listas (seguidores, seguindo, "Quem seguir")
+export type UserSummary = {
+  id: string;
+  name: string;
+  username: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  isFollowing: boolean;
+  followsYou: boolean;
+};
+
+export type SuggestionsResponse = { users: UserSummary[] };
 
 // '' ou só espaços vira null (= campo apagado)
 const optionalText = (max: number, message: string) =>

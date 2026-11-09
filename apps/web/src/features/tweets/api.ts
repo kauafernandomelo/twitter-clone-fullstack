@@ -24,6 +24,7 @@ import { profileQueryKey } from '../users/api';
 export const tweetKeys = {
   lists: ['tweets', 'list'] as const,
   timeline: ['tweets', 'list', 'timeline'] as const,
+  following: ['tweets', 'list', 'following'] as const,
   byUser: (username: string) => ['tweets', 'list', 'user', username.toLowerCase()] as const,
   detail: (id: string) => ['tweet', id] as const,
 };
@@ -41,6 +42,8 @@ function useTweetList(queryKey: readonly unknown[], path: string) {
 }
 
 export const useTimeline = () => useTweetList(tweetKeys.timeline, '/tweets');
+
+export const useFollowingFeed = () => useTweetList(tweetKeys.following, '/feed/following');
 
 export const useUserTweets = (username: string) =>
   useTweetList(tweetKeys.byUser(username), `/users/${encodeURIComponent(username)}/tweets`);
@@ -85,6 +88,7 @@ export function useCreateTweet() {
       (await api<TweetResponse>('/tweets', { method: 'POST', body: input })).tweet,
     onSuccess: (tweet) => {
       prependTo(queryClient, tweetKeys.timeline, tweet);
+      prependTo(queryClient, tweetKeys.following, tweet);
       prependTo(queryClient, tweetKeys.byUser(tweet.author.username), tweet);
       adjustTweetsCount(queryClient, tweet.author.username, +1);
     },

@@ -3,9 +3,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, Link2, MapPin } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/Button';
+import { FollowButton } from '@/features/follows/components/FollowButton';
+import { FollowsYouBadge } from '@/features/follows/components/FollowsYouBadge';
 import { withTransform } from '@/lib/cloudinary';
 
 import { EditProfileModal } from './EditProfileModal';
@@ -41,15 +44,16 @@ export function ProfileHeader({ profile, isOwnProfile }: ProfileHeaderProps) {
               Editar perfil
             </Button>
           ) : (
-            <Button variant="inverse" disabled title="Em breve">
-              Seguir
-            </Button>
+            <FollowButton username={profile.username} isFollowing={profile.isFollowing} />
           )}
         </div>
 
         <div className="mt-3 mb-3">
           <h2 className="text-xl leading-6 font-extrabold break-words">{profile.name}</h2>
-          <p className="text-[15px] text-muted">@{profile.username}</p>
+          <p className="flex items-center gap-1 text-[15px] text-muted">
+            @{profile.username}
+            {profile.followsYou && <FollowsYouBadge />}
+          </p>
         </div>
 
         {profile.bio && (
@@ -81,6 +85,19 @@ export function ProfileHeader({ profile, isOwnProfile }: ProfileHeaderProps) {
             Entrou em {joinedAt}
           </li>
         </ul>
+
+        <div className="mb-4 flex gap-5 text-[15px]">
+          <Link to={`/${profile.username}/following`} className="hover:underline">
+            <span className="font-bold">{profile.followingCount}</span>{' '}
+            <span className="text-muted">Seguindo</span>
+          </Link>
+          <Link to={`/${profile.username}/followers`} className="hover:underline">
+            <span className="font-bold">{profile.followersCount}</span>{' '}
+            <span className="text-muted">
+              {profile.followersCount === 1 ? 'Seguidor' : 'Seguidores'}
+            </span>
+          </Link>
+        </div>
       </div>
 
       {isOwnProfile && (

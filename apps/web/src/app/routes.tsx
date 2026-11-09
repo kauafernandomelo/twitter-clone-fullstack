@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/AuthGuards';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { FollowListPage } from '@/pages/FollowListPage';
 import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -56,6 +57,8 @@ export const routes: RouteObject[] = [
           // rotas estáticas acima têm prioridade sobre este parâmetro
           { path: '/:username', element: <ProfilePage /> },
           { path: '/:username/status/:tweetId', element: <TweetPage /> },
+          { path: '/:username/followers', element: <FollowListPage tab="followers" /> },
+          { path: '/:username/following', element: <FollowListPage tab="following" /> },
         ],
       },
     ],

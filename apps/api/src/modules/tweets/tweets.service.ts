@@ -11,6 +11,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import { AppError } from '../../lib/app-error';
 import { isOwnUploadUrl } from '../../lib/cloudinary';
 import { prisma } from '../../lib/prisma';
+import { findUserIdByUsername } from '../users/users.service';
 
 type CreateTweetData = z.output<typeof createTweetSchema>;
 type UpdateTweetData = z.output<typeof updateTweetSchema>;
@@ -64,12 +65,17 @@ export function listRecent(query: CursorQuery) {
 }
 
 export async function listByUsername(username: string, query: CursorQuery) {
-  const user = await prisma.user.findUnique({
-    where: { username: username.toLowerCase() },
-    select: { id: true },
-  });
-  if (!user) throw new AppError(404, 'Esta conta não existe', 'NOT_FOUND');
-  return paginate({ authorId: user.id }, query);
+  return paginate({ authorId: await findUserIdByUsername(username) }, query);
+}
+
+/** Aba "Seguindo": posts de quem eu sigo + os meus (como no Twitter). */
+export function listFollowingFeed(viewerId: string, query: CursorQuery) {
+  return paginate(
+    {
+      OR: [{ authorId: viewerId }, { author: { followers: { some: { followerId: viewerId } } } }],
+    },
+    query,
+  );
 }
 
 export async function getById(id: string) {
