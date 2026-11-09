@@ -1,10 +1,5 @@
 import { createBrowserRouter } from 'react-router';
 
-import { HomePage } from '@/pages/HomePage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+import { routes } from './routes';
 
-// Rotas da aplicação. Login/cadastro (Fase 1) e perfil (Fase 2) entram aqui.
-export const router = createBrowserRouter([
-  { path: '/', element: <HomePage /> },
-  { path: '*', element: <NotFoundPage /> },
-]);
+export const router = createBrowserRouter(routes);

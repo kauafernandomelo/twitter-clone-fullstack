@@ -1,17 +1,23 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
-import type { ReactElement } from 'react';
-import { MemoryRouter } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 
-// render() com os providers da app. Cada teste ganha um QueryClient novo (sem cache vazando).
-export function renderWithProviders(ui: ReactElement, { route = '/' } = {}) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+import { createQueryClient } from '@/app/query-client';
+import { routes } from '@/app/routes';
+
+// Monta o app inteiro (rotas reais + providers) a partir de uma URL inicial.
+export function renderApp(initialPath = '/') {
+  const queryClient = createQueryClient();
+  queryClient.setDefaultOptions({
+    queries: { ...queryClient.getDefaultOptions().queries, retry: false },
   });
+  const router = createMemoryRouter(routes, { initialEntries: [initialPath] });
 
-  return render(
+  const utils = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   );
+
+  return { ...utils, router, queryClient };
 }

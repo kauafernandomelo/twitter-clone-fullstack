@@ -1,4 +1,5 @@
-// Schema do banco. Os models entram fase a fase (User na Fase 1, Tweet na Fase 3...).
+// Schema do banco. Os models entram fase a fase.
+// Convenção: models/campos em camelCase no código, tabelas/colunas em snake_case no banco.
 
 generator client {
   provider     = "prisma-client"
@@ -8,4 +9,38 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  name         String   @db.VarChar(50)
+  // sempre minúsculo: garante unicidade sem diferenciar maiúsculas e URLs estáveis (/fulano)
+  username     String   @unique @db.VarChar(15)
+  email        String   @unique @db.VarChar(254)
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// Refresh tokens opacos com rotação. Guardamos só o hash (SHA-256): se o banco vazar,
+// os tokens não servem pra nada. Tokens da mesma "família" vêm do mesmo login;
+// se um token já usado reaparecer, a família inteira é revogada (detecção de roubo).
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  familyId  String    @map("family_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
 }
