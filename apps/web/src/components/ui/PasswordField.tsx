@@ -18,7 +18,7 @@ export function PasswordField(
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
-          className="text-muted hover:bg-foreground/10 hover:text-foreground rounded-full p-1.5"
+          className="rounded-full p-1.5 text-muted hover:bg-foreground/10 hover:text-foreground"
         >
           <Icon className="size-5" />
         </button>

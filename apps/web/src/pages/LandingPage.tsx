@@ -40,7 +40,7 @@ export function LandingPage({ modal }: LandingPageProps) {
         </div>
       </main>
 
-      <footer className="text-muted px-4 py-3 text-center text-[13px]">
+      <footer className="px-4 py-3 text-center text-[13px] text-muted">
         © {new Date().getFullYear()} Twitter Clone — projeto de estudo
       </footer>
 

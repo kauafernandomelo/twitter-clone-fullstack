@@ -71,7 +71,7 @@ export function SignupForm() {
         Criar conta
       </Button>
 
-      <p className="text-muted text-[15px]">
+      <p className="text-[15px] text-muted">
         Já tem uma conta?{' '}
         <Link to="/login" replace className="text-brand hover:underline">
           Entrar

@@ -6,7 +6,7 @@ export function NotFoundPage() {
       <h1 className="text-2xl font-bold">Esta página não existe.</h1>
       <Link
         to="/"
-        className="bg-brand hover:bg-brand-hover rounded-full px-5 py-2 font-bold text-white"
+        className="rounded-full bg-brand px-5 py-2 font-bold text-white hover:bg-brand-hover"
       >
         Voltar para o início
       </Link>
