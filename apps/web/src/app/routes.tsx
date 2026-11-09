@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router';
 
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/AuthGuards';
+import { BookmarksPage } from '@/pages/BookmarksPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { FollowListPage } from '@/pages/FollowListPage';
 import { HomePage } from '@/pages/HomePage';
@@ -48,12 +49,7 @@ export const routes: RouteObject[] = [
               <ComingSoonPage title="Mensagens" description="Conversas privadas em tempo real." />
             ),
           },
-          {
-            path: '/bookmarks',
-            element: (
-              <ComingSoonPage title="Salvos" description="Os posts que você salvar ficam aqui." />
-            ),
-          },
+          { path: '/bookmarks', element: <BookmarksPage /> },
           // rotas estáticas acima têm prioridade sobre este parâmetro
           { path: '/:username', element: <ProfilePage /> },
           { path: '/:username/status/:tweetId', element: <TweetPage /> },

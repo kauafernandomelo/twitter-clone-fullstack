@@ -1,4 +1,4 @@
-import { TWEET_MAX_LENGTH, TWEET_MAX_MEDIA, tweetLength } from '@twitter-clone/shared';
+import { type Tweet, TWEET_MAX_LENGTH, TWEET_MAX_MEDIA, tweetLength } from '@twitter-clone/shared';
 import { Image as ImageIcon, X } from 'lucide-react';
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react';
 
@@ -14,6 +14,7 @@ import { validateImageFile } from '@/lib/images';
 
 import { useCreateTweet } from '../api';
 import { CharCounter } from './CharCounter';
+import { QuotedTweetCard } from './QuotedTweetCard';
 
 type Attachment = { id: string; file: File; previewUrl: string };
 
@@ -21,9 +22,19 @@ type TweetComposerProps = {
   onPosted?: () => void;
   autoFocus?: boolean;
   className?: string;
+  /** compondo uma resposta a este post */
+  replyTo?: Tweet;
+  /** compondo uma citação deste post */
+  quote?: Tweet;
 };
 
-export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerProps) {
+export function TweetComposer({
+  onPosted,
+  autoFocus,
+  className,
+  replyTo,
+  quote,
+}: TweetComposerProps) {
   const user = useCurrentUser();
   const createTweet = useCreateTweet();
   const [text, setText] = useState('');
@@ -85,7 +96,12 @@ export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerP
     try {
       // sobe as imagens em paralelo e só então cria o post
       const media = await Promise.all(attachments.map((a) => uploadImage(a.file, 'tweet')));
-      await createTweet.mutateAsync({ content: text, media });
+      await createTweet.mutateAsync({
+        content: text,
+        media,
+        replyToId: replyTo?.id,
+        quoteOfId: quote?.id,
+      });
 
       attachments.forEach((a) => URL.revokeObjectURL(a.previewUrl));
       setText('');
@@ -103,13 +119,18 @@ export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerP
   return (
     <form
       onSubmit={handleSubmit}
-      aria-label="Escrever post"
+      aria-label={replyTo ? 'Escrever resposta' : 'Escrever post'}
       aria-busy={submitting}
       className={cn('flex gap-3 px-4 pt-3 pb-2', className)}
     >
       <Avatar src={user.avatarUrl} name={user.name} />
 
       <div className="min-w-0 flex-1">
+        {replyTo && (
+          <p className="pt-1 text-[15px] text-muted">
+            Respondendo a <span className="text-brand">@{replyTo.author.username}</span>
+          </p>
+        )}
         <label htmlFor={textareaId} className="sr-only">
           Texto do post
         </label>
@@ -118,7 +139,13 @@ export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerP
           id={textareaId}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="O que está acontecendo?"
+          placeholder={
+            replyTo
+              ? 'Poste sua resposta'
+              : quote
+                ? 'Adicione um comentário'
+                : 'O que está acontecendo?'
+          }
           autoFocus={autoFocus}
           rows={1}
           disabled={submitting}
@@ -147,6 +174,8 @@ export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerP
             ))}
           </ul>
         )}
+
+        {quote && <QuotedTweetCard quote={quote} />}
 
         <FormError message={error ?? undefined} />
 
@@ -184,7 +213,7 @@ export function TweetComposer({ onPosted, autoFocus, className }: TweetComposerP
               loading={submitting}
               className="px-4"
             >
-              Postar
+              {replyTo ? 'Responder' : 'Postar'}
             </Button>
           </div>
         </div>

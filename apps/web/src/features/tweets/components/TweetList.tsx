@@ -15,7 +15,8 @@ export function TweetList({ query, empty }: TweetListProps) {
   return (
     <InfiniteList
       query={query}
-      getKey={(tweet) => tweet.id}
+      // entryId: o mesmo post pode aparecer como original e como repost na mesma lista
+      getKey={(tweet) => tweet.entryId}
       renderItem={(tweet) => <TweetCard tweet={tweet} />}
       empty={empty}
       errorMessage="Não foi possível carregar os posts."

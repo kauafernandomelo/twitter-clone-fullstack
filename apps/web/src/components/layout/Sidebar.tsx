@@ -41,11 +41,15 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <Button size="lg" onClick={openCompose} className="mt-4 hidden w-[90%] xl:inline-flex">
+        <Button
+          size="lg"
+          onClick={() => openCompose()}
+          className="mt-4 hidden w-[90%] xl:inline-flex"
+        >
           Postar
         </Button>
         <Button
-          onClick={openCompose}
+          onClick={() => openCompose()}
           aria-label="Postar"
           className="mt-4 size-[52px] p-0 xl:hidden"
         >

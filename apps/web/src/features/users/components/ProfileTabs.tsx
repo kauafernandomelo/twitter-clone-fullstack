@@ -1,11 +1,8 @@
 import { useState } from 'react';
 
-import { useUserTweets } from '@/features/tweets/api';
-import { TweetList } from '@/features/tweets/components/TweetList';
 import { TabBar } from '@/components/ui/TabBar';
-
-const TABS = ['Posts', 'Respostas', 'Mídia', 'Curtidas'] as const;
-type Tab = (typeof TABS)[number];
+import { type ProfileTab, useUserTweets } from '@/features/tweets/api';
+import { TweetList } from '@/features/tweets/components/TweetList';
 
 function EmptyState({ title, description }: { title: string; description: string }) {
   return (
@@ -16,41 +13,84 @@ function EmptyState({ title, description }: { title: string; description: string
   );
 }
 
-function PostsTab({ username }: { username: string }) {
-  const tweets = useUserTweets(username);
+const TAB_LABELS: Record<ProfileTab, string> = {
+  tweets: 'Posts',
+  replies: 'Respostas',
+  media: 'Mídia',
+  likes: 'Curtidas',
+};
+
+function emptyFor(tab: ProfileTab, username: string, isOwnProfile: boolean) {
+  const who = isOwnProfile ? 'Você' : `@${username}`;
+  switch (tab) {
+    case 'tweets':
+      return {
+        title: 'Nada por aqui ainda',
+        description: `Quando ${who} postar, os posts vão aparecer aqui.`,
+      };
+    case 'replies':
+      return {
+        title: 'Nenhuma resposta ainda',
+        description: `As respostas de ${who} vão aparecer aqui.`,
+      };
+    case 'media':
+      return {
+        title: 'Nenhuma foto ainda',
+        description: `Os posts com imagens de ${who} vão aparecer aqui.`,
+      };
+    case 'likes':
+      return {
+        title: 'Nenhuma curtida ainda',
+        description: 'Toque no coração de um post para curtir. Só você vê suas curtidas.',
+      };
+  }
+}
+
+function TabContent({
+  username,
+  tab,
+  isOwnProfile,
+}: {
+  username: string;
+  tab: ProfileTab;
+  isOwnProfile: boolean;
+}) {
+  const query = useUserTweets(username, tab);
   return (
-    <TweetList
-      query={tweets}
-      empty={
-        <EmptyState
-          title="Nada por aqui ainda"
-          description={`Quando @${username} postar, os posts vão aparecer aqui.`}
-        />
-      }
-    />
+    <TweetList query={query} empty={<EmptyState {...emptyFor(tab, username, isOwnProfile)} />} />
   );
 }
 
-// Respostas, Mídia e Curtidas ganham conteúdo na Fase 5.
-export function ProfileTabs({ username }: { username: string }) {
-  const [active, setActive] = useState<Tab>('Posts');
+// Curtidas são privadas (como no Twitter desde 2024): a aba só aparece no próprio perfil.
+export function ProfileTabs({
+  username,
+  isOwnProfile,
+}: {
+  username: string;
+  isOwnProfile: boolean;
+}) {
+  const [active, setActive] = useState<ProfileTab>('tweets');
+  const tabs: ProfileTab[] = isOwnProfile
+    ? ['tweets', 'replies', 'media', 'likes']
+    : ['tweets', 'replies', 'media'];
 
   return (
     <>
       <TabBar
         label="Conteúdo do perfil"
-        tabs={TABS.map((tab) => ({
-          label: tab,
+        tabs={tabs.map((tab) => ({
+          label: TAB_LABELS[tab],
           active: active === tab,
           onSelect: () => setActive(tab),
         }))}
       />
       <div role="tabpanel">
-        {active === 'Posts' ? (
-          <PostsTab username={username} />
-        ) : (
-          <EmptyState title="Em breve" description={`A aba ${active} chega nas próximas fases.`} />
-        )}
+        <TabContent
+          key={`${username}:${active}`}
+          username={username}
+          tab={active}
+          isOwnProfile={isOwnProfile}
+        />
       </div>
     </>
   );
