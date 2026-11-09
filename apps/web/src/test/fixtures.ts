@@ -20,6 +20,10 @@ export const ownProfile: UserProfile = {
   bannerUrl: null,
   createdAt: '2026-11-09T12:00:00.000Z',
   tweetsCount: 0,
+  followersCount: 0,
+  followingCount: 0,
+  isFollowing: false,
+  followsYou: false,
 };
 
 export const otherProfile: UserProfile = {
