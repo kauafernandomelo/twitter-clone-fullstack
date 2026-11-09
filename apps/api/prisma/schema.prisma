@@ -1,0 +1,11 @@
+// Schema do banco. Os models entram fase a fase (User na Fase 1, Tweet na Fase 3...).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
