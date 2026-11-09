@@ -80,6 +80,22 @@ npm run db:migrate
 npm run dev
 ```
 
+## Dados de demonstração
+
+Para ver o app "habitado" (perfis com foto, posts, curtidas, notificações e DMs):
+
+```bash
+npm run db:seed
+```
+
+Cria 21 perfis fictícios e a conta **@visitante**, usada pelo botão _"Entrar como visitante"_ da página inicial. Precisa das chaves do Cloudinary, porque as fotos são enviadas para lá. Pode rodar quantas vezes quiser: o seed anterior é apagado e recriado, e as contas reais não são tocadas.
+
+Em produção (rode da sua máquina, com a connection string do Neon):
+
+```bash
+NODE_ENV=production DATABASE_URL="postgresql://..." npm run db:seed -- --confirm
+```
+
 ## Scripts
 
 | Comando              | O que faz                             |
@@ -94,6 +110,7 @@ npm run dev
 | `npm run db:down`    | derruba os containers                 |
 | `npm run db:migrate` | cria/aplica migrations (Prisma)       |
 | `npm run db:studio`  | abre o Prisma Studio                  |
+| `npm run db:seed`    | cria os dados de demonstração         |
 
 ## Deploy (Render + Neon)
 
