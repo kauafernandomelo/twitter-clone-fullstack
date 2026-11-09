@@ -13,6 +13,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import { AppError } from '../../lib/app-error';
 import { isOwnUploadUrl } from '../../lib/cloudinary';
 import { prisma } from '../../lib/prisma';
+import { notify, unnotify } from '../notifications/notifications.service';
 import { findUserIdByUsername } from '../users/users.service';
 import { entrySelect, toTweet } from './tweets.select';
 
@@ -48,14 +49,18 @@ export async function paginate(
   return { items, nextCursor };
 }
 
-/** Posts reais por trás de um id: se for o id de um repost, devolve o original. */
-async function resolveOriginalId(id: string, message?: string) {
+/** Post real por trás de um id (se for o id de um repost, devolve o original) e seu autor. */
+async function resolveOriginal(id: string, message?: string) {
   const tweet = await prisma.tweet.findUnique({
     where: { id },
-    select: { id: true, retweetOfId: true },
+    select: { id: true, authorId: true, retweetOf: { select: { id: true, authorId: true } } },
   });
   if (!tweet) throw notFound(message);
-  return tweet.retweetOfId ?? tweet.id;
+  return tweet.retweetOf ?? { id: tweet.id, authorId: tweet.authorId };
+}
+
+async function resolveOriginalId(id: string, message?: string) {
+  return (await resolveOriginal(id, message)).id;
 }
 
 // ---------- listas ----------
@@ -175,30 +180,48 @@ export async function create(authorId: string, data: CreateTweetData) {
     throw new AppError(400, 'Dados inválidos', 'VALIDATION_ERROR', { media: ['Imagem inválida'] });
   }
 
-  const replyToId = data.replyToId
-    ? await resolveOriginalId(data.replyToId, 'O post que você quer responder não existe')
+  const replyTo = data.replyToId
+    ? await resolveOriginal(data.replyToId, 'O post que você quer responder não existe')
     : null;
-  const quoteOfId = data.quoteOfId
-    ? await resolveOriginalId(data.quoteOfId, 'O post que você quer citar não existe')
+  const quoteOf = data.quoteOfId
+    ? await resolveOriginal(data.quoteOfId, 'O post que você quer citar não existe')
     : null;
 
   // post + hashtags + menções numa transação: ou entra tudo, ou nada
-  const id = await prisma.$transaction(async (tx) => {
+  const { id, mentioned } = await prisma.$transaction(async (tx) => {
     const tweet = await tx.tweet.create({
       data: {
         authorId,
         content: data.content,
-        replyToId,
-        isReply: replyToId !== null,
-        quoteOfId,
-        isQuote: quoteOfId !== null,
+        replyToId: replyTo?.id ?? null,
+        isReply: replyTo !== null,
+        quoteOfId: quoteOf?.id ?? null,
+        isQuote: quoteOf !== null,
         media: { create: data.media.map((media, position) => ({ ...media, position })) },
       },
       select: { id: true, createdAt: true },
     });
-    await syncTextIndex(tx, tweet.id, data.content, tweet.createdAt);
-    return tweet.id;
+    const { added } = await syncTextIndex(tx, tweet.id, data.content, tweet.createdAt);
+    return { id: tweet.id, mentioned: added };
   });
+
+  // notificações só depois do commit (nunca avisar sobre um post que não foi salvo).
+  // Quem já recebe "respondeu"/"citou" não recebe também "mencionou" pelo mesmo post.
+  const notified = new Set<string>();
+  if (replyTo) {
+    await notify({ recipientId: replyTo.authorId, actorId: authorId, type: 'REPLY', tweetId: id });
+    notified.add(replyTo.authorId);
+  }
+  if (quoteOf && !notified.has(quoteOf.authorId)) {
+    await notify({ recipientId: quoteOf.authorId, actorId: authorId, type: 'QUOTE', tweetId: id });
+    notified.add(quoteOf.authorId);
+  }
+  for (const userId of mentioned) {
+    if (!notified.has(userId)) {
+      await notify({ recipientId: userId, actorId: authorId, type: 'MENTION', tweetId: id });
+    }
+  }
+
   return getById(authorId, id);
 }
 
@@ -206,7 +229,8 @@ const MAX_TAGS_PER_TWEET = 20;
 
 /**
  * Regrava as hashtags e menções de um post a partir do texto (na criação e na edição).
- * Menção só é salva se o @usuário existir.
+ * Menção só é salva se o @usuário existir. Devolve quem passou a ser mencionado e quem
+ * deixou de ser (para criar/remover as notificações de menção).
  */
 async function syncTextIndex(
   tx: Prisma.TransactionClient,
@@ -222,14 +246,23 @@ async function syncTextIndex(
     await tx.tweetHashtag.createMany({ data: tags.map((tag) => ({ tweetId, tag, createdAt })) });
   }
 
+  const previous = await tx.mention.findMany({ where: { tweetId }, select: { userId: true } });
+  const current =
+    usernames.length > 0
+      ? await tx.user.findMany({ where: { username: { in: usernames } }, select: { id: true } })
+      : [];
+
   await tx.mention.deleteMany({ where: { tweetId } });
-  if (usernames.length > 0) {
-    const users = await tx.user.findMany({
-      where: { username: { in: usernames } },
-      select: { id: true },
-    });
-    await tx.mention.createMany({ data: users.map((user) => ({ tweetId, userId: user.id })) });
+  if (current.length > 0) {
+    await tx.mention.createMany({ data: current.map((user) => ({ tweetId, userId: user.id })) });
   }
+
+  const before = new Set(previous.map((mention) => mention.userId));
+  const after = new Set(current.map((user) => user.id));
+  return {
+    added: [...after].filter((userId) => !before.has(userId)),
+    removed: [...before].filter((userId) => !after.has(userId)),
+  };
 }
 
 // Busca o post garantindo que existe, que não é um repost e que quem pede é o autor.
@@ -261,14 +294,21 @@ export async function update(userId: string, id: string, { content }: UpdateTwee
 
   // Salvar sem mudar nada não marca como "Editado"
   if (content !== current.content) {
-    await prisma.$transaction(async (tx) => {
+    const mentions = await prisma.$transaction(async (tx) => {
       const tweet = await tx.tweet.update({
         where: { id },
         data: { content, editedAt: new Date() },
         select: { createdAt: true },
       });
-      await syncTextIndex(tx, id, content, tweet.createdAt);
+      return syncTextIndex(tx, id, content, tweet.createdAt);
     });
+    // menção nova na edição avisa a pessoa; menção removida some da lista dela
+    for (const recipientId of mentions.added) {
+      await notify({ recipientId, actorId: userId, type: 'MENTION', tweetId: id });
+    }
+    for (const recipientId of mentions.removed) {
+      await unnotify({ recipientId, actorId: userId, type: 'MENTION', tweetId: id });
+    }
   }
   return getById(userId, id);
 }
@@ -281,9 +321,25 @@ export async function remove(userId: string, id: string) {
 // ---------- interações (todas idempotentes) ----------
 
 export async function setLike(userId: string, id: string, liked: boolean) {
-  const tweetId = await resolveOriginalId(id);
-  if (liked) await prisma.like.createMany({ data: [{ userId, tweetId }], skipDuplicates: true });
-  else await prisma.like.deleteMany({ where: { userId, tweetId } });
+  const tweet = await resolveOriginal(id);
+  const event = {
+    recipientId: tweet.authorId,
+    actorId: userId,
+    type: 'LIKE',
+    tweetId: tweet.id,
+  } as const;
+
+  if (liked) {
+    // count = 0 quando já estava curtido: não notifica de novo
+    const { count } = await prisma.like.createMany({
+      data: [{ userId, tweetId: tweet.id }],
+      skipDuplicates: true,
+    });
+    if (count > 0) await notify(event);
+  } else {
+    const { count } = await prisma.like.deleteMany({ where: { userId, tweetId: tweet.id } });
+    if (count > 0) await unnotify(event);
+  }
 }
 
 export async function setBookmark(userId: string, id: string, bookmarked: boolean) {
@@ -297,13 +353,24 @@ export async function setBookmark(userId: string, id: string, bookmarked: boolea
 
 /** Repost = uma linha nova em tweets apontando para o original (no máximo uma por pessoa). */
 export async function setRetweet(userId: string, id: string, retweeted: boolean) {
-  const retweetOfId = await resolveOriginalId(id);
+  const tweet = await resolveOriginal(id);
+  const event = {
+    recipientId: tweet.authorId,
+    actorId: userId,
+    type: 'RETWEET',
+    tweetId: tweet.id,
+  } as const;
+
   if (retweeted) {
-    await prisma.tweet.createMany({
-      data: [{ authorId: userId, retweetOfId }],
+    const { count } = await prisma.tweet.createMany({
+      data: [{ authorId: userId, retweetOfId: tweet.id }],
       skipDuplicates: true,
     });
+    if (count > 0) await notify(event);
   } else {
-    await prisma.tweet.deleteMany({ where: { authorId: userId, retweetOfId } });
+    const { count } = await prisma.tweet.deleteMany({
+      where: { authorId: userId, retweetOfId: tweet.id },
+    });
+    if (count > 0) await unnotify(event);
   }
 }

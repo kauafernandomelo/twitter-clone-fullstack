@@ -3,6 +3,7 @@ import type { z } from 'zod';
 
 import { AppError } from '../../lib/app-error';
 import { prisma } from '../../lib/prisma';
+import { notify, unnotify } from '../notifications/notifications.service';
 import { summarySelect, toUserSummary } from '../users/users.select';
 import { findUserIdByUsername } from '../users/users.service';
 
@@ -20,15 +21,19 @@ async function resolveTarget(viewerId: string, username: string) {
 // (O botão pode ser clicado duas vezes, a rede pode reenviar a request...)
 export async function follow(viewerId: string, username: string) {
   const followingId = await resolveTarget(viewerId, username);
-  await prisma.follow.createMany({
+  const { count } = await prisma.follow.createMany({
     data: [{ followerId: viewerId, followingId }],
     skipDuplicates: true,
   });
+  if (count > 0) await notify({ recipientId: followingId, actorId: viewerId, type: 'FOLLOW' });
 }
 
 export async function unfollow(viewerId: string, username: string) {
   const followingId = await resolveTarget(viewerId, username);
-  await prisma.follow.deleteMany({ where: { followerId: viewerId, followingId } });
+  const { count } = await prisma.follow.deleteMany({
+    where: { followerId: viewerId, followingId },
+  });
+  if (count > 0) await unnotify({ recipientId: followingId, actorId: viewerId, type: 'FOLLOW' });
 }
 
 /**
