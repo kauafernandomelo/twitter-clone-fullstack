@@ -57,7 +57,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Modal **Editar perfil** com recorte manual de avatar (1:1) e banner (3:1), zoom e remoção do banner
 - [x] Imagem recortada e redimensionada no navegador antes do upload (avatar 400×400, banner 1500×500)
 - [x] Testes: 15 novos na API + 8 novos no front
-- [ ] Testar o upload real no Cloudinary (falta configurar as credenciais no `.env`)
+- [x] Testar o upload real no Cloudinary
 
 ## Fase 3 — Tweets ✅
 
@@ -196,7 +196,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] `render.yaml` (Blueprint): serviço Docker, health check, segredo JWT gerado, deploy só depois do CI passar
 - [x] `WEB_ORIGIN` automático no Render (`RENDER_EXTERNAL_URL`), `TRUST_PROXY=1`, cookies `Secure` em produção
 - [x] README com funcionalidades, arquitetura e passo a passo de deploy
-- [ ] Criar o banco no Neon e o serviço no Render (precisa das suas contas)
+- [x] Criar o banco no Neon e o serviço no Render — no ar em https://twitter-clone-05v3.onrender.com
 - [x] Configurar o Cloudinary e testar o upload real de imagens
 
 ## Extra — Dados de demonstração + conta de visitante
@@ -207,7 +207,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Em produção exige `--confirm`
 - [x] Botão **"Entrar como visitante"** na landing, que loga na conta demo (`POST /api/auth/demo`)
 - [x] A conta demo não pode editar o perfil (é a mesma para todo mundo)
-- [ ] Rodar o seed em produção (depois do deploy)
+- [x] Rodar o seed em produção (depois do deploy)
 
 ---
 

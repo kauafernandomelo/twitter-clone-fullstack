@@ -4,6 +4,8 @@
 
 Clone full-stack do Twitter feito com **React + TypeScript** no front e **Node + Express + PostgreSQL** no back, com tempo real via **Socket.IO**.
 
+**No ar:** https://twitter-clone-05v3.onrender.com — clique em **Entrar como visitante** para explorar sem criar conta (o plano grátis do Render dorme sem uso; o primeiro acesso pode levar ~50 s).
+
 O histórico de construção, fase a fase, e as decisões técnicas estão no [ROADMAP.md](ROADMAP.md).
 
 ## Funcionalidades
