@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "postdb:migrate": "prisma generate",
     "db:studio": "prisma studio",
+    "db:seed": "tsx --env-file=.env src/seed/index.ts",
     "postinstall": "prisma generate"
   },
   "devDependencies": {
