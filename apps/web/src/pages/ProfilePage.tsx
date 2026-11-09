@@ -54,7 +54,7 @@ export function ProfilePage() {
         showBack
       />
       <ProfileHeader profile={profile} isOwnProfile={profile.id === currentUser.id} />
-      <ProfileTabs username={profile.username} />
+      <ProfileTabs username={profile.username} isOwnProfile={profile.id === currentUser.id} />
     </>
   );
 }

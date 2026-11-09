@@ -12,3 +12,14 @@ tweetsRouter.post('/', tweetsController.create);
 tweetsRouter.get('/:id', tweetsController.getById);
 tweetsRouter.patch('/:id', tweetsController.update);
 tweetsRouter.delete('/:id', tweetsController.remove);
+tweetsRouter.get('/:id/replies', tweetsController.listReplies);
+tweetsRouter.get('/:id/thread', tweetsController.getThread);
+
+for (const [path, action] of [
+  ['like', 'setLike'],
+  ['retweet', 'setRetweet'],
+  ['bookmark', 'setBookmark'],
+] as const) {
+  tweetsRouter.post(`/:id/${path}`, tweetsController.toggle(action));
+  tweetsRouter.delete(`/:id/${path}`, tweetsController.toggle(action));
+}

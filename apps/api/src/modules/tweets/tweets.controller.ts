@@ -2,6 +2,7 @@ import {
   createTweetSchema,
   cursorQuerySchema,
   type Paginated,
+  type ThreadResponse,
   type Tweet,
   type TweetResponse,
   updateTweetSchema,
@@ -14,20 +15,50 @@ import { getUserId } from '../../middlewares/require-auth';
 import * as tweetsService from './tweets.service';
 
 const tweetId = (req: Request) => parseIdParam(req.params.id, 'Este post não existe');
+const usernameParam = (req: Request) =>
+  z.object({ username: z.string().min(1).max(15) }).parse(req.params).username;
+const cursorQuery = (req: Request) => cursorQuerySchema.parse(req.query);
 
 export async function listRecent(req: Request, res: Response) {
-  const page = await tweetsService.listRecent(cursorQuerySchema.parse(req.query));
+  const page = await tweetsService.listRecent(getUserId(req), cursorQuery(req));
   res.json(page satisfies Paginated<Tweet>);
 }
 
-export async function listByUser(req: Request, res: Response) {
-  const { username } = z.object({ username: z.string().min(1).max(15) }).parse(req.params);
-  const page = await tweetsService.listByUsername(username, cursorQuerySchema.parse(req.query));
+export async function listFollowingFeed(req: Request, res: Response) {
+  const page = await tweetsService.listFollowingFeed(getUserId(req), cursorQuery(req));
   res.json(page satisfies Paginated<Tweet>);
+}
+
+/** Abas do perfil: /users/:username/{tweets|replies|media|likes} */
+export function listProfileTab(tab: tweetsService.ProfileTab) {
+  return async (req: Request, res: Response) => {
+    const page = await tweetsService.listByUsername(
+      getUserId(req),
+      usernameParam(req),
+      tab,
+      cursorQuery(req),
+    );
+    res.json(page satisfies Paginated<Tweet>);
+  };
+}
+
+export async function listBookmarks(req: Request, res: Response) {
+  const page = await tweetsService.listBookmarks(getUserId(req), cursorQuery(req));
+  res.json(page satisfies Paginated<Tweet>);
+}
+
+export async function listReplies(req: Request, res: Response) {
+  const page = await tweetsService.listReplies(getUserId(req), tweetId(req), cursorQuery(req));
+  res.json(page satisfies Paginated<Tweet>);
+}
+
+export async function getThread(req: Request, res: Response) {
+  const ancestors = await tweetsService.getThread(getUserId(req), tweetId(req));
+  res.json({ ancestors } satisfies ThreadResponse);
 }
 
 export async function getById(req: Request, res: Response) {
-  const tweet = await tweetsService.getById(tweetId(req));
+  const tweet = await tweetsService.getById(getUserId(req), tweetId(req));
   res.json({ tweet } satisfies TweetResponse);
 }
 
@@ -46,4 +77,12 @@ export async function update(req: Request, res: Response) {
 export async function remove(req: Request, res: Response) {
   await tweetsService.remove(getUserId(req), tweetId(req));
   res.status(204).end();
+}
+
+/** POST liga, DELETE desliga (curtir, repostar, salvar). */
+export function toggle(action: 'setLike' | 'setRetweet' | 'setBookmark') {
+  return async (req: Request, res: Response) => {
+    await tweetsService[action](getUserId(req), tweetId(req), req.method === 'POST');
+    res.status(204).end();
+  };
 }

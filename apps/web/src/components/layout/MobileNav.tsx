@@ -16,7 +16,7 @@ export function MobileNav() {
     <>
       <button
         type="button"
-        onClick={openCompose}
+        onClick={() => openCompose()}
         aria-label="Novo post"
         className="fixed right-4 bottom-[69px] z-20 flex size-14 items-center justify-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-hover sm:hidden"
       >
