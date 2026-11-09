@@ -30,24 +30,52 @@ model User {
   tweets        Tweet[]
   following     Follow[]       @relation("UserFollowing")
   followers     Follow[]       @relation("UserFollowers")
+  likes         Like[]
+  bookmarks     Bookmark[]
 
   @@map("users")
 }
 
 // O id é UUID v7, que já nasce ordenado pelo tempo: ordenar por id = ordenar por data,
 // e a paginação por cursor usa o próprio id (sem precisar de índice extra em created_at).
+//
+// Uma linha pode ser:
+// - post normal
+// - resposta (reply_to_id): se o post respondido for apagado, vira NULL, mas is_reply
+//   continua true para mostrar "post indisponível"
+// - citação (quote_of_id + is_quote), com a mesma lógica
+// - repost (retweet_of_id): sem texto próprio, apagado junto com o original
 model Tweet {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  authorId  String    @map("author_id") @db.Uuid
-  content   String    @default("") @db.VarChar(280)
-  editedAt  DateTime? @map("edited_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(uuid(7)) @db.Uuid
+  authorId    String    @map("author_id") @db.Uuid
+  content     String    @default("") @db.VarChar(280)
+  replyToId   String?   @map("reply_to_id") @db.Uuid
+  isReply     Boolean   @default(false) @map("is_reply")
+  quoteOfId   String?   @map("quote_of_id") @db.Uuid
+  isQuote     Boolean   @default(false) @map("is_quote")
+  retweetOfId String?   @map("retweet_of_id") @db.Uuid
+  editedAt    DateTime? @map("edited_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  author User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  media  TweetMedia[]
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  media     TweetMedia[]
+  likes     Like[]
+  bookmarks Bookmark[]
 
+  replyTo   Tweet?  @relation("Replies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Tweet[] @relation("Replies")
+  quoteOf   Tweet?  @relation("Quotes", fields: [quoteOfId], references: [id], onDelete: SetNull)
+  quotes    Tweet[] @relation("Quotes")
+  retweetOf Tweet?  @relation("Retweets", fields: [retweetOfId], references: [id], onDelete: Cascade)
+  retweets  Tweet[] @relation("Retweets")
+
+  // cada pessoa reposta um post no máximo uma vez (NULLs não colidem no Postgres)
+  @@unique([authorId, retweetOfId])
   @@index([authorId, id(sort: Desc)])
+  @@index([replyToId, id])
+  @@index([quoteOfId])
+  @@index([retweetOfId])
   @@map("tweets")
 }
 
@@ -101,4 +129,35 @@ model Follow {
   @@index([followerId, id(sort: Desc)])
   @@index([followingId, id(sort: Desc)])
   @@map("follows")
+}
+
+model Like {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tweetId   String   @map("tweet_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tweetId])
+  @@index([tweetId])
+  @@index([userId, id(sort: Desc)])
+  @@map("likes")
+}
+
+// Itens salvos: mesmo formato das curtidas, mas privados (só o dono vê)
+model Bookmark {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tweetId   String   @map("tweet_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tweetId])
+  @@index([tweetId])
+  @@index([userId, id(sort: Desc)])
+  @@map("bookmarks")
 }
