@@ -3,6 +3,9 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
+// Tempo real: troca o Socket.IO por um emissor falso controlado pelos testes
+vi.mock('@/lib/socket', () => import('./fake-socket'));
+
 // jsdom não implementa showModal/close do <dialog>
 if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
