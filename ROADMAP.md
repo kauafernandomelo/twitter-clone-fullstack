@@ -41,15 +41,23 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Erros da API mapeados para os campos do formulário
 - [x] Testes: 17 de integração da API (banco real de teste) + 9 de fluxo no front
 
-## Fase 2 — Layout + Perfil
+## Fase 2 — Layout + Perfil ✅
 
-- [ ] Layout de 3 colunas (sidebar, conteúdo, coluna lateral) responsivo
-- [ ] Sidebar com navegação + menu da conta (sair)
-- [ ] `GET /api/users/:username`
-- [ ] **Página de perfil** (`/:username`): banner, avatar, nome, @, bio, data de entrada, contadores
-- [ ] Upload de imagens com Cloudinary (assinatura gerada no backend)
-- [ ] Modal de **editar perfil** (nome, bio, localização, site, avatar, banner)
-- [ ] Testes
+- [x] Layout de 3 colunas: sidebar | conteúdo (600px) | coluna lateral
+- [x] Responsivo: sidebar com texto (desktop), só ícones (tablet), barra inferior (mobile)
+- [x] Todos os itens de navegação; os de fases futuras abrem uma página "Em breve"
+- [x] Menu da conta (sair) na sidebar e no topo da home no mobile
+- [x] Campos de perfil: bio, localização, site, avatar, banner (+ migration)
+- [x] `GET /api/users/:username` (perfil público, sem email)
+- [x] `PATCH /api/users/me` (string vazia apaga o campo; site sem `https://` é completado)
+- [x] Usernames reservados para não colidir com rotas (`/home`, `/explore`...)
+- [x] Upload direto do navegador para o Cloudinary com assinatura gerada na API (o secret nunca sai do servidor)
+- [x] A API só aceita imagens enviadas para a pasta do próprio usuário
+- [x] **Página de perfil** (`/:username`): banner, avatar, nome, @, bio, localização, site, data de entrada, abas, conta inexistente
+- [x] Modal **Editar perfil** com recorte manual de avatar (1:1) e banner (3:1), zoom e remoção do banner
+- [x] Imagem recortada e redimensionada no navegador antes do upload (avatar 400×400, banner 1500×500)
+- [x] Testes: 15 novos na API + 8 novos no front
+- [ ] Testar o upload real no Cloudinary (falta configurar as credenciais no `.env`)
 
 ## Fase 3 — Tweets
 
@@ -133,4 +141,8 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Refresh token opaco, não JWT** (Fase 1): fica salvo (como hash SHA-256) no banco para poder ser revogado. Há uma janela de 10 s de tolerância na rotação para não derrubar quem tem duas abas abertas.
 - **Cookies em produção** (pendente na Fase 10): hoje é `SameSite=Lax` com proxy na mesma origem. No deploy, usar rewrite da Vercel (`/api` → API) para manter a mesma origem e evitar `SameSite=None`.
 - **Prisma 7 não roda `generate` no `migrate dev`** (Fase 1): o script `db:migrate` já encadeia os dois.
+- **Upload direto pro Cloudinary** (Fase 2): a API só assina (pasta + timestamp) e o arquivo vai do navegador para o Cloudinary, sem consumir banda nem memória do nosso servidor.
+- **Recorte no navegador** (Fase 2): o canvas recorta e redimensiona antes do upload (uma foto de 4 MB vira ~100 KB).
+- **Imagens antigas não são apagadas do Cloudinary** (Fase 2): ao trocar o avatar, a imagem anterior fica lá. Limpeza (via API admin do Cloudinary) fica para a Fase 9.
+- **Contadores de posts e seguidores**: o "0 posts" do cabeçalho do perfil vira um valor real na Fase 3, e os seguidores entram na Fase 4.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.
