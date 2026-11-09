@@ -2,7 +2,7 @@ import type { UpdateProfileInput, updateProfileSchema } from '@twitter-clone/sha
 import type { z } from 'zod';
 
 import { AppError } from '../../lib/app-error';
-import { isOwnUploadUrl } from '../../lib/cloudinary';
+import { deleteUploadedImages, isOwnUploadUrl } from '../../lib/cloudinary';
 import { prisma } from '../../lib/prisma';
 import { profileSelect, toUserProfile } from './users.select';
 
@@ -46,10 +46,21 @@ export async function updateProfile(userId: string, data: UpdateProfileData) {
     throw new AppError(400, 'Dados inválidos', 'VALIDATION_ERROR', details);
   }
 
+  // guarda as imagens atuais para apagar do Cloudinary as que forem trocadas/removidas
+  const before = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { avatarUrl: true, bannerUrl: true },
+  });
+
   const user = await prisma.user.update({
     where: { id: userId },
     data,
     select: profileSelect(userId),
   });
+
+  deleteUploadedImages([
+    data.avatarUrl !== undefined && data.avatarUrl !== before.avatarUrl ? before.avatarUrl : null,
+    data.bannerUrl !== undefined && data.bannerUrl !== before.bannerUrl ? before.bannerUrl : null,
+  ]);
   return toUserProfile(user);
 }
