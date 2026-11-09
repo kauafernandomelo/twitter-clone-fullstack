@@ -9,7 +9,9 @@ const MENTION_BEFORE_CARET = /(?:^|[^\p{L}\p{N}_@])@([a-zA-Z0-9_]{1,15})$/u;
 
 /**
  * Autocomplete de @menções para um textarea controlado.
- * Devolve o estado da lista e os handlers para ligar no textarea (padrão ARIA combobox).
+ * Devolve o estado da lista e os handlers para ligar no textarea. O textarea mantém o papel
+ * nativo de caixa de texto (ARIA não permite "combobox" em textarea) e aponta para a lista
+ * com aria-controls/aria-activedescendant.
  */
 export function useMentionAutocomplete(
   text: string,
@@ -87,9 +89,7 @@ export function useMentionAutocomplete(
     listboxId,
     /** props para espalhar no textarea */
     textareaProps: {
-      role: 'combobox' as const,
       'aria-autocomplete': 'list' as const,
-      'aria-expanded': open,
       'aria-controls': open ? listboxId : undefined,
       'aria-activedescendant': open ? optionId(active) : undefined,
       onKeyDown,

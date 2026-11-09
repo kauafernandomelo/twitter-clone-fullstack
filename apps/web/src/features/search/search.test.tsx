@@ -98,7 +98,7 @@ describe('Explorar', () => {
 
 describe('autocomplete de @menções', () => {
   const composer = () =>
-    within(screen.getByRole('form', { name: 'Escrever post' })).getByRole('combobox', {
+    within(screen.getByRole('form', { name: 'Escrever post' })).getByRole('textbox', {
       name: 'Texto do post',
     });
 
@@ -114,7 +114,7 @@ describe('autocomplete de @menções', () => {
     await userEvent.type(composer(), 'Oi @br');
     const option = await screen.findByRole('option', { name: /Bruno Lima/ });
     expect(option).toHaveAttribute('aria-selected', 'true');
-    expect(composer()).toHaveAttribute('aria-expanded', 'true');
+    expect(composer()).toHaveAttribute('aria-controls');
 
     await userEvent.keyboard('{Enter}');
 
