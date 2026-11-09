@@ -90,15 +90,20 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Componentes genéricos `InfiniteList` e `TabBar` (reaproveitados em posts, usuários e abas)
 - [x] Testes: 11 novos na API + 10 novos no front
 
-## Fase 5 — Interações
+## Fase 5 — Interações ✅
 
-- [ ] Curtir / descurtir
-- [ ] Responder (threads) + exibição da conversa
-- [ ] Retweet / desfazer retweet
-- [ ] Quote tweet
-- [ ] Bookmarks + página "Itens salvos"
-- [ ] Abas do perfil: Respostas, Mídia, Curtidas
-- [ ] Testes
+- [x] Models `Like` e `Bookmark` (id UUID v7, par único usuário/post)
+- [x] Respostas, citações e reposts como linhas em `tweets` (`reply_to_id`, `quote_of_id`, `retweet_of_id`)
+- [x] Constraints `CHECK`: repost não tem texto nem é resposta/citação; post não referencia a si mesmo
+- [x] **Curtir** com update otimista (desfaz se a API falhar)
+- [x] **Responder** pelo modal (mostra o post original e "Respondendo a @fulano") ou direto na página do post
+- [x] Página do post com a **conversa acima** (linha ligando os posts), estatísticas e **respostas** em ordem cronológica
+- [x] **Repostar** / desfazer, com a entrada "Fulano repostou" nas timelines (uma por pessoa)
+- [x] **Citar** com o post original embutido; se o original for apagado, aparece "não está disponível"
+- [x] **Salvar** + página **Salvos** (privada; remover tira o post da página na hora)
+- [x] Abas do perfil: Posts, Respostas, Mídia e Curtidas (**só no próprio perfil**, privadas como no Twitter atual)
+- [x] Interagir pelo id de um repost age no post original
+- [x] Testes: 15 novos na API + 10 novos no front
 
 ## Fase 6 — Busca + Hashtags
 
@@ -160,4 +165,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Edição só do texto** (Fase 3): a imagem não muda depois de publicada; para trocar, apaga e posta de novo. Não há limite de tempo para editar nem histórico de versões; dá para adicionar depois se fizer falta.
 - **Paginação por cursor com UUID v7** (Fase 3): o id já nasce ordenado pelo tempo, então `WHERE id < cursor ORDER BY id DESC` pagina sem `OFFSET` e sem índice extra.
 - **Timeline global provisória** (Fase 3): a home mostra posts de todo mundo e vira "Para você" na Fase 4, ao lado de "Seguindo".
+- **Repost como linha em `tweets`** (Fase 5): a timeline continua sendo uma lista só, paginada por id, sem juntar duas fontes. O `entryId` diferencia a entrada do repost do post original na mesma lista.
+- **Resposta/citação de post apagado** (Fase 5): `reply_to_id`/`quote_of_id` viram NULL (`ON DELETE SET NULL`), mas `is_reply`/`is_quote` continuam true para a interface mostrar "post indisponível". Reposts são apagados junto com o original (`CASCADE`).
+- **Contador de "Reposts"** (Fase 5): nas ações, soma reposts e citações (como no Twitter); na página do post aparecem separados.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.
