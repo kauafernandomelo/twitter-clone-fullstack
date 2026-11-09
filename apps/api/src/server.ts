@@ -1,21 +1,28 @@
+import { createServer } from 'node:http';
+
 import { createApp } from './app';
 import { env } from './config/env';
 import { logger } from './lib/logger';
 import { prisma } from './lib/prisma';
+import { closeSocket, initSocket } from './lib/socket';
 
-const app = createApp();
+// O servidor HTTP é criado à parte para o Socket.IO dividir a mesma porta com o Express.
+const server = createServer(createApp());
+initSocket(server);
 
-const server = app.listen(env.PORT, () => {
+server.listen(env.PORT, () => {
   logger.info(`🚀 API rodando em http://localhost:${env.PORT}`);
 });
 
-// Desligamento gracioso: para de aceitar conexões e fecha o pool do banco.
+// Desligamento gracioso: fecha os sockets, para de aceitar conexões e fecha o pool do banco.
 function shutdown(signal: string) {
   logger.info(`${signal} recebido, encerrando...`);
-  server.close(async () => {
-    await prisma.$disconnect();
-    process.exit(0);
-  });
+  void closeSocket().then(() =>
+    server.close(async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    }),
+  );
 }
 
 process.on('SIGINT', () => shutdown('SIGINT'));
