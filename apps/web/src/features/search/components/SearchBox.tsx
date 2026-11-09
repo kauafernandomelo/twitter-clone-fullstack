@@ -38,7 +38,7 @@ export function SearchBox({ initialValue = '', className, autoFocus }: SearchBox
           type="button"
           aria-label="Limpar busca"
           onClick={() => setValue('')}
-          className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-brand p-0.5 text-black"
+          className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-brand p-0.5 text-white"
         >
           <X className="size-3.5" />
         </button>

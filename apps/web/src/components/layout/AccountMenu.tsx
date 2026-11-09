@@ -6,6 +6,8 @@ import { useCurrentUser, useLogout } from '@/features/auth/api';
 import { useDismiss } from '@/hooks/use-dismiss';
 import { cn } from '@/lib/cn';
 
+import { AppearanceModal } from './AppearanceModal';
+
 type AccountMenuProps = {
   /** compact: só o avatar (cabeçalho do mobile) */
   compact?: boolean;
@@ -18,6 +20,7 @@ export function AccountMenu({ compact, placement = 'top', className }: AccountMe
   const user = useCurrentUser();
   const logout = useLogout();
   const [open, setOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
@@ -31,10 +34,21 @@ export function AccountMenu({ compact, placement = 'top', className }: AccountMe
           id={menuId}
           role="menu"
           className={cn(
-            'absolute left-0 z-20 w-[300px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-background py-3 shadow-[0_0_15px_rgba(255,255,255,0.2)]',
+            'absolute left-0 z-20 w-[300px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-background py-3 shadow-popover',
             placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
           )}
         >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              setAppearanceOpen(true);
+            }}
+            className="w-full px-4 py-3 text-left font-bold hover:bg-foreground/5"
+          >
+            Aparência
+          </button>
           <button
             type="button"
             role="menuitem"
@@ -46,6 +60,8 @@ export function AccountMenu({ compact, placement = 'top', className }: AccountMe
           </button>
         </div>
       )}
+
+      <AppearanceModal open={appearanceOpen} onClose={() => setAppearanceOpen(false)} />
 
       <button
         type="button"
