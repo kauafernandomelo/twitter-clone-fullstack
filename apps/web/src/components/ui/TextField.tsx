@@ -77,7 +77,7 @@ export function TextField({
         {maxLength !== undefined && (
           <span
             aria-hidden="true"
-            className="text-muted absolute top-1.5 right-2 hidden text-[13px] peer-focus:block"
+            className="absolute top-1.5 right-2 hidden text-[13px] text-muted peer-focus:block"
           >
             {length} / {maxLength}
           </span>
@@ -87,7 +87,7 @@ export function TextField({
         )}
       </div>
       {error && (
-        <p id={errorId} className="text-danger mt-1 px-2 text-[13px]">
+        <p id={errorId} className="mt-1 px-2 text-[13px] text-danger">
           {error}
         </p>
       )}

@@ -19,6 +19,7 @@ describe('POST /api/auth/register', () => {
       name: 'Ana Souza',
       username: 'ana_souza',
       email: 'ana@example.com',
+      avatarUrl: null,
       createdAt: expect.any(String),
     });
     expect(res.body.user).not.toHaveProperty('passwordHash');
@@ -65,6 +66,15 @@ describe('POST /api/auth/register', () => {
     expect(Object.keys(res.body.details)).toEqual(
       expect.arrayContaining(['name', 'username', 'email', 'password']),
     );
+  });
+
+  it('recusa usernames reservados para rotas do app', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({ ...validUser, username: 'Explore' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details.username).toEqual(['Este nome de usuário não está disponível']);
   });
 });
 

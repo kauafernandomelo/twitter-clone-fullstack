@@ -47,6 +47,8 @@ npm install
 
 # 2. variáveis de ambiente
 cp apps/api/.env.example apps/api/.env
+#    preencha JWT_ACCESS_SECRET (o comando para gerar está no arquivo)
+#    e, para upload de imagens, as chaves do Cloudinary (opcional)
 
 # 3. subir o Postgres (dev na porta 5434, teste na 5435)
 npm run db:up

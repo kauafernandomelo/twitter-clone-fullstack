@@ -10,13 +10,42 @@ export const nameSchema = z
   .min(1, 'Informe seu nome')
   .max(50, 'O nome pode ter no máximo 50 caracteres');
 
+// Usernames que colidiriam com rotas do app (/home, /explore...) já que o perfil fica em /:username
+export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
+  'home',
+  'login',
+  'logout',
+  'signup',
+  'explore',
+  'search',
+  'notifications',
+  'messages',
+  'bookmarks',
+  'settings',
+  'compose',
+  'hashtag',
+  'status',
+  'admin',
+  'api',
+  'about',
+  'help',
+  'privacy',
+  'terms',
+  'root',
+  'support',
+]);
+
 export const usernameSchema = z
   .string()
   .trim()
   .min(4, 'O nome de usuário precisa ter pelo menos 4 caracteres')
   .max(15, 'O nome de usuário pode ter no máximo 15 caracteres')
   .regex(USERNAME_REGEX, 'Use apenas letras, números e _')
-  .toLowerCase();
+  .toLowerCase()
+  .refine(
+    (username) => !RESERVED_USERNAMES.has(username),
+    'Este nome de usuário não está disponível',
+  );
 
 export const emailSchema = z
   .string()
@@ -55,6 +84,7 @@ export type AuthUser = {
   name: string;
   username: string;
   email: string;
+  avatarUrl: string | null;
   createdAt: string;
 };
 

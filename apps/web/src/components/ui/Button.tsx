@@ -8,6 +8,7 @@ const variants = {
   primary: 'bg-brand text-white hover:bg-brand-hover',
   inverse: 'bg-foreground text-background hover:bg-foreground/90',
   outline: 'border border-border text-brand hover:bg-brand/10',
+  secondary: 'border border-border text-foreground hover:bg-foreground/10',
   ghost: 'text-foreground hover:bg-foreground/10',
 } as const;
 
@@ -43,7 +44,7 @@ export function Button({
       aria-busy={loading || undefined}
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-full font-bold transition-colors',
-        'focus-visible:outline-brand focus-visible:outline-2 focus-visible:outline-offset-2',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
         'disabled:cursor-not-allowed disabled:opacity-50',
         variants[variant],
         sizes[size],

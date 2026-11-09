@@ -18,6 +18,11 @@ model User {
   username     String   @unique @db.VarChar(15)
   email        String   @unique @db.VarChar(254)
   passwordHash String   @map("password_hash")
+  bio          String?  @db.VarChar(160)
+  location     String?  @db.VarChar(30)
+  website      String?  @db.VarChar(100)
+  avatarUrl    String?  @map("avatar_url")
+  bannerUrl    String?  @map("banner_url")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

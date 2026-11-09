@@ -2,12 +2,22 @@ import { z } from 'zod';
 
 // Valida as variáveis de ambiente na subida: se faltar algo, a API nem inicia
 // (falha rápida e com mensagem clara, em vez de quebrar no meio de uma request).
+// "VAR=" (vazia) no .env conta como não definida
+const optionalString = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z.string().optional(),
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3333),
   DATABASE_URL: z.url(),
   WEB_ORIGIN: z.url(),
   JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
+  // Opcionais: sem elas a API sobe normalmente, só o upload de imagens fica desativado.
+  CLOUDINARY_CLOUD_NAME: optionalString,
+  CLOUDINARY_API_KEY: optionalString,
+  CLOUDINARY_API_SECRET: optionalString,
 });
 
 const parsed = envSchema.safeParse(process.env);

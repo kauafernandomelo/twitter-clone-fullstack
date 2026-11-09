@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 import { sessionQueryKey } from '@/features/auth/api';
-import { isSessionError } from '@/lib/api';
+import { ApiError, isSessionError } from '@/lib/api';
 
 // Factory: o app usa uma instância única; cada teste cria a sua (sem cache vazando entre testes).
 export function createQueryClient() {
@@ -17,7 +17,10 @@ export function createQueryClient() {
     defaultOptions: {
       queries: {
         staleTime: 30_000,
-        retry: (failureCount, error) => !isSessionError(error) && failureCount < 1,
+        // erros 4xx (não encontrado, sem permissão...) não melhoram tentando de novo
+        retry: (failureCount, error) =>
+          !(error instanceof ApiError && error.status >= 400 && error.status < 500) &&
+          failureCount < 1,
         refetchOnWindowFocus: false,
       },
     },

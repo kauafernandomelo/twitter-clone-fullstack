@@ -11,6 +11,7 @@ const user: AuthUser = {
   name: 'Ana Souza',
   username: 'ana_souza',
   email: 'ana@example.com',
+  avatarUrl: null,
   createdAt: '2026-11-09T00:00:00.000Z',
 };
 
@@ -167,7 +168,10 @@ describe('logout', () => {
     });
     const { router } = renderApp('/home');
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
+    // o menu da conta aparece na sidebar e no topo (mobile); usamos o primeiro
+    const [menuButton] = await screen.findAllByRole('button', { name: 'Menu da conta' });
+    await userEvent.click(menuButton!);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sair de @ana_souza' }));
 
     expect(await screen.findByRole('heading', { name: 'Acontecendo agora' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/');

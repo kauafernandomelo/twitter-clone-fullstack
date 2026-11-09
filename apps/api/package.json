@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev && prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "postdb:migrate": "prisma generate",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },

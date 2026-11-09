@@ -15,6 +15,8 @@ export const ErrorCode = {
   INVALID_REFRESH_TOKEN: 'INVALID_REFRESH_TOKEN',
   CONFLICT: 'CONFLICT',
   TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
+  FORBIDDEN: 'FORBIDDEN',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

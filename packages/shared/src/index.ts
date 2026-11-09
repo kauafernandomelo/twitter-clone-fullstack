@@ -1,6 +1,8 @@
 // Contratos compartilhados entre front e back (schemas Zod + tipos inferidos).
 export * from './auth';
 export * from './errors';
+export * from './uploads';
+export * from './users';
 
 export type HealthResponse = {
   status: 'ok';

@@ -54,7 +54,7 @@ export function LoginForm() {
         Entrar
       </Button>
 
-      <p className="text-muted text-[15px]">
+      <p className="text-[15px] text-muted">
         Não tem uma conta?{' '}
         <Link to="/signup" replace className="text-brand hover:underline">
           Inscreva-se

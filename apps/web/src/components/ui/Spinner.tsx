@@ -13,7 +13,7 @@ export function Spinner({
     <LoaderCircle
       role="status"
       aria-label={label}
-      className={cn('text-brand size-6 animate-spin', className)}
+      className={cn('size-6 animate-spin text-brand', className)}
     />
   );
 }
