@@ -1,9 +1,11 @@
-import type {
-  createTweetSchema,
-  cursorQuerySchema,
-  Paginated,
-  Tweet,
-  updateTweetSchema,
+import {
+  type createTweetSchema,
+  type cursorQuerySchema,
+  extractHashtags,
+  extractMentions,
+  type Paginated,
+  type Tweet,
+  type updateTweetSchema,
 } from '@twitter-clone/shared';
 import type { z } from 'zod';
 
@@ -28,7 +30,7 @@ const notFound = (message = 'Este post não existe') => new AppError(404, messag
  * enquanto a pessoa rola a tela, e continua rápida em listas enormes.
  * Busca N+1 para saber se existe próxima página sem precisar de um COUNT.
  */
-async function paginate(
+export async function paginate(
   viewerId: string,
   where: Prisma.TweetWhereInput,
   { cursor, limit }: CursorQuery,
@@ -180,19 +182,54 @@ export async function create(authorId: string, data: CreateTweetData) {
     ? await resolveOriginalId(data.quoteOfId, 'O post que você quer citar não existe')
     : null;
 
-  const row = await prisma.tweet.create({
-    data: {
-      authorId,
-      content: data.content,
-      replyToId,
-      isReply: replyToId !== null,
-      quoteOfId,
-      isQuote: quoteOfId !== null,
-      media: { create: data.media.map((media, position) => ({ ...media, position })) },
-    },
-    select: entrySelect(authorId),
+  // post + hashtags + menções numa transação: ou entra tudo, ou nada
+  const id = await prisma.$transaction(async (tx) => {
+    const tweet = await tx.tweet.create({
+      data: {
+        authorId,
+        content: data.content,
+        replyToId,
+        isReply: replyToId !== null,
+        quoteOfId,
+        isQuote: quoteOfId !== null,
+        media: { create: data.media.map((media, position) => ({ ...media, position })) },
+      },
+      select: { id: true, createdAt: true },
+    });
+    await syncTextIndex(tx, tweet.id, data.content, tweet.createdAt);
+    return tweet.id;
   });
-  return toTweet(row);
+  return getById(authorId, id);
+}
+
+const MAX_TAGS_PER_TWEET = 20;
+
+/**
+ * Regrava as hashtags e menções de um post a partir do texto (na criação e na edição).
+ * Menção só é salva se o @usuário existir.
+ */
+async function syncTextIndex(
+  tx: Prisma.TransactionClient,
+  tweetId: string,
+  content: string,
+  createdAt: Date,
+) {
+  const tags = extractHashtags(content).slice(0, MAX_TAGS_PER_TWEET);
+  const usernames = extractMentions(content).slice(0, MAX_TAGS_PER_TWEET);
+
+  await tx.tweetHashtag.deleteMany({ where: { tweetId } });
+  if (tags.length > 0) {
+    await tx.tweetHashtag.createMany({ data: tags.map((tag) => ({ tweetId, tag, createdAt })) });
+  }
+
+  await tx.mention.deleteMany({ where: { tweetId } });
+  if (usernames.length > 0) {
+    const users = await tx.user.findMany({
+      where: { username: { in: usernames } },
+      select: { id: true },
+    });
+    await tx.mention.createMany({ data: users.map((user) => ({ tweetId, userId: user.id })) });
+  }
 }
 
 // Busca o post garantindo que existe, que não é um repost e que quem pede é o autor.
@@ -224,7 +261,14 @@ export async function update(userId: string, id: string, { content }: UpdateTwee
 
   // Salvar sem mudar nada não marca como "Editado"
   if (content !== current.content) {
-    await prisma.tweet.update({ where: { id }, data: { content, editedAt: new Date() } });
+    await prisma.$transaction(async (tx) => {
+      const tweet = await tx.tweet.update({
+        where: { id },
+        data: { content, editedAt: new Date() },
+        select: { createdAt: true },
+      });
+      await syncTextIndex(tx, id, content, tweet.createdAt);
+    });
   }
   return getById(userId, id);
 }
