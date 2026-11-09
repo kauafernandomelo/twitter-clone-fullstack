@@ -34,11 +34,19 @@ describe('POST /api/tweets', () => {
     expect(res.status).toBe(201);
     expect(res.body.tweet).toEqual({
       id: expect.any(String),
+      entryId: res.body.tweet.id,
       content: 'Meu primeiro post!',
       media: [],
       author: { id: user.id, name: 'Ana Souza', username: 'ana_souza', avatarUrl: null },
       createdAt: expect.any(String),
       editedAt: null,
+      isReply: false,
+      replyTo: null,
+      isQuote: false,
+      quote: null,
+      stats: { replies: 0, retweets: 0, quotes: 0, likes: 0 },
+      viewer: { liked: false, retweeted: false, bookmarked: false },
+      repostedBy: null,
     });
   });
 
