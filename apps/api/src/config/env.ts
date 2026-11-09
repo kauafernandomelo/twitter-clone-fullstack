@@ -7,6 +7,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3333),
   DATABASE_URL: z.url(),
   WEB_ORIGIN: z.url(),
+  JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -17,3 +18,4 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
+export const isProduction = env.NODE_ENV === 'production';
