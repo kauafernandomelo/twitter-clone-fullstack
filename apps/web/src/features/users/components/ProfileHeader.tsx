@@ -14,9 +14,14 @@ import { withTransform } from '@/lib/cloudinary';
 
 import { EditProfileModal } from './EditProfileModal';
 
-type ProfileHeaderProps = { profile: UserProfile; isOwnProfile: boolean };
+type ProfileHeaderProps = {
+  profile: UserProfile;
+  isOwnProfile: boolean;
+  /** false na conta de visitante (compartilhada): a API recusa a edição */
+  canEdit?: boolean;
+};
 
-export function ProfileHeader({ profile, isOwnProfile }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, isOwnProfile, canEdit = true }: ProfileHeaderProps) {
   const [editing, setEditing] = useState(false);
   const joinedAt = format(new Date(profile.createdAt), "MMMM 'de' yyyy", { locale: ptBR });
 
@@ -40,7 +45,11 @@ export function ProfileHeader({ profile, isOwnProfile }: ProfileHeaderProps) {
             size={null}
             className="-mt-[15%] aspect-square w-1/4 min-w-12 border-4 border-background"
           />
-          {isOwnProfile ? (
+          {isOwnProfile && !canEdit ? (
+            <span className="rounded-full border border-border px-4 py-1.5 text-sm text-muted">
+              Conta de visitante
+            </span>
+          ) : isOwnProfile ? (
             <Button variant="secondary" onClick={() => setEditing(true)}>
               Editar perfil
             </Button>

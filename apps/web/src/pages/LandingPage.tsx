@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { useDemoLogin } from '@/features/auth/api';
+import { FormError } from '@/features/auth/components/FormError';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { SignupForm } from '@/features/auth/components/SignupForm';
 
@@ -13,6 +15,8 @@ type LandingPageProps = {
 
 export function LandingPage({ modal }: LandingPageProps) {
   const navigate = useNavigate();
+  // sucesso: a sessão vai pro cache e o PublicOnlyRoute leva para /home
+  const demoLogin = useDemoLogin();
   const closeModal = () => navigate('/', { replace: true });
 
   return (
@@ -36,6 +40,17 @@ export function LandingPage({ modal }: LandingPageProps) {
             <Button variant="outline" fullWidth onClick={() => navigate('/login')}>
               Entrar
             </Button>
+
+            <p className="mt-10 mb-2 font-bold">Só quer dar uma olhada?</p>
+            <Button
+              variant="secondary"
+              fullWidth
+              loading={demoLogin.isPending}
+              onClick={() => demoLogin.mutate()}
+            >
+              Entrar como visitante
+            </Button>
+            <FormError message={demoLogin.error?.message} />
           </div>
         </div>
       </main>
