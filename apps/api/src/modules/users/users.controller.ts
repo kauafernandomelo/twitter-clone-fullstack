@@ -9,7 +9,7 @@ const usernameParamSchema = z.object({ username: z.string().min(1).max(15) });
 
 export async function getByUsername(req: Request, res: Response) {
   const { username } = usernameParamSchema.parse(req.params);
-  const user = await usersService.getProfileByUsername(username);
+  const user = await usersService.getProfileByUsername(username, getUserId(req));
   res.json({ user } satisfies UserProfileResponse);
 }
 

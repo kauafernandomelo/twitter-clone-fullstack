@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
 import { authRouter } from './modules/auth/auth.routes';
+import { feedRouter } from './modules/feed/feed.routes';
+import { suggestionsRouter } from './modules/follows/suggestions.routes';
 import { healthRouter } from './modules/health/health.routes';
 import { tweetsRouter } from './modules/tweets/tweets.routes';
 import { uploadsRouter } from './modules/uploads/uploads.routes';
@@ -14,3 +16,5 @@ routes.use('/auth', authRouter);
 routes.use('/users', usersRouter);
 routes.use('/uploads', uploadsRouter);
 routes.use('/tweets', tweetsRouter);
+routes.use('/feed', feedRouter);
+routes.use('/suggestions', suggestionsRouter);

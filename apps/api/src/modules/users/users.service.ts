@@ -1,38 +1,31 @@
-import type { UpdateProfileInput, updateProfileSchema, UserProfile } from '@twitter-clone/shared';
+import type { UpdateProfileInput, updateProfileSchema } from '@twitter-clone/shared';
 import type { z } from 'zod';
 
-import type { Prisma } from '../../generated/prisma/client';
 import { AppError } from '../../lib/app-error';
 import { isOwnUploadUrl } from '../../lib/cloudinary';
 import { prisma } from '../../lib/prisma';
+import { profileSelect, toUserProfile } from './users.select';
 
 type UpdateProfileData = z.output<typeof updateProfileSchema>;
 
-export const profileSelect = {
-  id: true,
-  name: true,
-  username: true,
-  bio: true,
-  location: true,
-  website: true,
-  avatarUrl: true,
-  bannerUrl: true,
-  createdAt: true,
-  _count: { select: { tweets: true } },
-} satisfies Prisma.UserSelect;
+export const accountNotFound = () => new AppError(404, 'Esta conta não existe', 'NOT_FOUND');
 
-type ProfileRow = Prisma.UserGetPayload<{ select: typeof profileSelect }>;
-
-export function toUserProfile({ _count, ...user }: ProfileRow): UserProfile {
-  return { ...user, createdAt: user.createdAt.toISOString(), tweetsCount: _count.tweets };
-}
-
-export async function getProfileByUsername(username: string) {
+/** Busca só o id pelo username (usado por seguir, listas e posts do perfil). */
+export async function findUserIdByUsername(username: string) {
   const user = await prisma.user.findUnique({
     where: { username: username.toLowerCase() },
-    select: profileSelect,
+    select: { id: true },
   });
-  if (!user) throw new AppError(404, 'Esta conta não existe', 'NOT_FOUND');
+  if (!user) throw accountNotFound();
+  return user.id;
+}
+
+export async function getProfileByUsername(username: string, viewerId: string) {
+  const user = await prisma.user.findUnique({
+    where: { username: username.toLowerCase() },
+    select: profileSelect(viewerId),
+  });
+  if (!user) throw accountNotFound();
   return toUserProfile(user);
 }
 
@@ -56,7 +49,7 @@ export async function updateProfile(userId: string, data: UpdateProfileData) {
   const user = await prisma.user.update({
     where: { id: userId },
     data,
-    select: profileSelect,
+    select: profileSelect(userId),
   });
   return toUserProfile(user);
 }
