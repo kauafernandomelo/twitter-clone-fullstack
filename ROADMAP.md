@@ -76,15 +76,19 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Contador de posts no cabeçalho do perfil
 - [x] Testes: 18 novos na API + 12 novos no front
 
-## Fase 4 — Seguir + Feed
+## Fase 4 — Seguir + Feed ✅
 
-- [ ] Model `Follow`
-- [ ] Seguir / deixar de seguir (atualização otimista)
-- [ ] Páginas de seguidores / seguindo
-- [ ] Feed "Seguindo" (scroll infinito)
-- [ ] Feed "Para você"
-- [ ] "Quem seguir" na coluna lateral
-- [ ] Testes
+- [x] Model `Follow` com id UUID v7 (lista paginável) e par único seguidor/seguido
+- [x] Constraint `CHECK` no Postgres impede seguir a si mesmo (além da validação na API)
+- [x] Seguir / deixar de seguir idempotentes (`POST`/`DELETE /api/users/:username/follow`)
+- [x] Perfil com contadores **Seguindo** / **Seguidores** e selo **"Segue você"**
+- [x] Botão "Seguir" / "Seguindo" (vira "Deixar de seguir" em vermelho no hover)
+- [x] Update otimista: o botão e os contadores mudam na hora e desfazem se a API falhar
+- [x] Páginas `/:username/followers` e `/:username/following` com abas e scroll infinito
+- [x] Home com abas **Para você** (todos os posts recentes) e **Seguindo** (quem eu sigo + meus posts)
+- [x] **Quem seguir** na coluna lateral: os mais seguidos que eu ainda não sigo
+- [x] Componentes genéricos `InfiniteList` e `TabBar` (reaproveitados em posts, usuários e abas)
+- [x] Testes: 11 novos na API + 10 novos no front
 
 ## Fase 5 — Interações
 
@@ -151,7 +155,8 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Upload direto pro Cloudinary** (Fase 2): a API só assina (pasta + timestamp) e o arquivo vai do navegador para o Cloudinary, sem consumir banda nem memória do nosso servidor.
 - **Recorte no navegador** (Fase 2): o canvas recorta e redimensiona antes do upload (uma foto de 4 MB vira ~100 KB).
 - **Imagens antigas não são apagadas do Cloudinary** (Fase 2): ao trocar o avatar, a imagem anterior fica lá. Limpeza (via API admin do Cloudinary) fica para a Fase 9.
-- **Seguidores**: os contadores entram na Fase 4.
+- **Feed "Seguindo" montado na leitura** (Fase 4): uma query com `author.followers.some(...)` usa os índices de `follows`. Escala bem até muitos milhares de usuários; no Twitter real o feed é pré-montado (fan-out on write), o que não faz sentido aqui.
+- **Sugestões em `/api/suggestions`** (Fase 4): fora de `/api/users/...` para não disputar a rota com um usuário chamado "suggestions".
 - **Edição só do texto** (Fase 3): a imagem não muda depois de publicada; para trocar, apaga e posta de novo. Não há limite de tempo para editar nem histórico de versões; dá para adicionar depois se fizer falta.
 - **Paginação por cursor com UUID v7** (Fase 3): o id já nasce ordenado pelo tempo, então `WHERE id < cursor ORDER BY id DESC` pagina sem `OFFSET` e sem índice extra.
 - **Timeline global provisória** (Fase 3): a home mostra posts de todo mundo e vira "Para você" na Fase 4, ao lado de "Seguindo".
