@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { authRouter } from './modules/auth/auth.routes';
 import { healthRouter } from './modules/health/health.routes';
+import { tweetsRouter } from './modules/tweets/tweets.routes';
 import { uploadsRouter } from './modules/uploads/uploads.routes';
 import { usersRouter } from './modules/users/users.routes';
 
@@ -12,3 +13,4 @@ routes.use('/health', healthRouter);
 routes.use('/auth', authRouter);
 routes.use('/users', usersRouter);
 routes.use('/uploads', uploadsRouter);
+routes.use('/tweets', tweetsRouter);
