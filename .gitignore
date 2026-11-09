@@ -1,0 +1,17 @@
+node_modules
+dist
+coverage
+*.tsbuildinfo
+
+# env (os .env.example e .env.test são versionados)
+.env
+.env.local
+.env.*.local
+
+# prisma client gerado
+apps/api/src/generated
+
+# editor / SO
+.DS_Store
+.idea
+*.log
