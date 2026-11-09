@@ -49,6 +49,17 @@ describe('página de perfil', () => {
     expect(screen.getByRole('button', { name: 'Editar perfil' })).toBeVisible();
   });
 
+  it('na conta de visitante não oferece editar o perfil', async () => {
+    mockApi({
+      'GET /auth/me': { status: 200, body: { user: { ...authUser, isDemo: true } } },
+      'GET /users/ana_souza': { status: 200, body: { user: ownProfile } },
+    });
+    renderApp('/ana_souza');
+
+    expect(await screen.findByText('Conta de visitante')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Editar perfil' })).not.toBeInTheDocument();
+  });
+
   it('no perfil de outra pessoa mostra "Seguir" em vez de editar', async () => {
     mockApi({ ...loggedIn, 'GET /users/bruno': { status: 200, body: { user: otherProfile } } });
     renderApp('/bruno');

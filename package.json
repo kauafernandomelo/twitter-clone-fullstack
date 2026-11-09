@@ -21,7 +21,8 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:migrate": "npm run db:migrate -w @twitter-clone/api",
-    "db:studio": "npm run db:studio -w @twitter-clone/api"
+    "db:studio": "npm run db:studio -w @twitter-clone/api",
+    "db:seed": "npm run db:seed -w @twitter-clone/api --"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

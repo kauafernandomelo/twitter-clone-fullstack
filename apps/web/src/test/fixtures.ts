@@ -7,6 +7,7 @@ export const authUser: AuthUser = {
   email: 'ana@example.com',
   avatarUrl: null,
   createdAt: '2026-11-09T12:00:00.000Z',
+  isDemo: false,
 };
 
 export const ownProfile: UserProfile = {

@@ -28,6 +28,13 @@ export async function login(req: Request, res: Response) {
   res.json({ user } satisfies AuthResponse);
 }
 
+export async function loginAsDemo(_req: Request, res: Response) {
+  const { user, tokens } = await authService.loginAsDemo();
+
+  setAuthCookies(res, tokens);
+  res.json({ user } satisfies AuthResponse);
+}
+
 export async function refresh(req: Request, res: Response) {
   try {
     const tokens = await authService.refresh(readRefreshCookie(req));

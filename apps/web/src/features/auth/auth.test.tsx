@@ -13,6 +13,7 @@ const user: AuthUser = {
   email: 'ana@example.com',
   avatarUrl: null,
   createdAt: '2026-11-09T00:00:00.000Z',
+  isDemo: false,
 };
 
 // O conteúdo atrás do modal fica inerte no navegador; nos testes buscamos dentro do dialog.
@@ -112,6 +113,38 @@ describe('login', () => {
     await userEvent.click(dialog.getByRole('button', { name: 'Entrar' }));
 
     expect(await dialog.findByRole('alert')).toHaveTextContent('Usuário ou senha incorretos');
+  });
+});
+
+describe('entrar como visitante', () => {
+  it('abre a sessão da conta demo e vai para /home', async () => {
+    mockApi({
+      ...loggedOut,
+      'POST /auth/demo': { status: 200, body: { user: { ...user, isDemo: true } } },
+    });
+    const { router } = renderApp('/');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Entrar como visitante' }));
+
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeVisible();
+    expect(router.state.location.pathname).toBe('/home');
+  });
+
+  it('mostra o aviso quando a conta demo não existe', async () => {
+    mockApi({
+      ...loggedOut,
+      'POST /auth/demo': {
+        status: 404,
+        body: { code: 'NOT_FOUND', message: 'A conta de visitante não está disponível no momento' },
+      },
+    });
+    renderApp('/');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Entrar como visitante' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'A conta de visitante não está disponível no momento',
+    );
   });
 });
 

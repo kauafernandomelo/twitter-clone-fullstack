@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createApp } from '../../app';
 import { userUploadFolder } from '../../lib/cloudinary';
+import { prisma } from '../../lib/prisma';
 import { registerAndLogin } from '../../test/helpers';
 
 const app = createApp();
@@ -57,6 +58,17 @@ describe('PATCH /api/users/me', () => {
       location: 'São Paulo',
       website: 'https://meusite.dev',
     });
+  });
+
+  it('a conta de visitante (demo) não pode editar o perfil', async () => {
+    const { agent, user } = await registerAndLogin();
+    await prisma.user.update({ where: { id: user.id }, data: { isDemo: true } });
+
+    const res = await agent.patch('/api/users/me').send({ name: 'Outro nome' });
+
+    expect(res.status).toBe(403);
+    const after = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    expect(after.name).toBe('Ana Souza');
   });
 
   it('string vazia apaga o campo', async () => {

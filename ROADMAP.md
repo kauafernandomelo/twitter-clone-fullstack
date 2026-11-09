@@ -197,7 +197,17 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] `WEB_ORIGIN` automático no Render (`RENDER_EXTERNAL_URL`), `TRUST_PROXY=1`, cookies `Secure` em produção
 - [x] README com funcionalidades, arquitetura e passo a passo de deploy
 - [ ] Criar o banco no Neon e o serviço no Render (precisa das suas contas)
-- [ ] Configurar o Cloudinary e testar o upload real de imagens
+- [x] Configurar o Cloudinary e testar o upload real de imagens
+
+## Extra — Dados de demonstração + conta de visitante
+
+- [x] `npm run db:seed`: 21 perfis com foto e banner, ~160 posts (respostas, citações, reposts, fotos, hashtags e menções), follows, curtidas, notificações e DMs
+- [x] Horários relativos ao momento em que roda: o feed parece recente e os "Assuntos do momento" têm conteúdo
+- [x] Pode rodar de novo: apaga o seed anterior (contas `@seed.example.com` e as imagens delas no Cloudinary) e recria; contas reais não são tocadas
+- [x] Em produção exige `--confirm`
+- [x] Botão **"Entrar como visitante"** na landing, que loga na conta demo (`POST /api/auth/demo`)
+- [x] A conta demo não pode editar o perfil (é a mesma para todo mundo)
+- [ ] Rodar o seed em produção (depois do deploy)
 
 ---
 
@@ -236,4 +246,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Um serviço só em produção** (Fase 10): front na Vercel com API em outro domínio exigiria cookies `SameSite=None` (de terceiros, cada vez mais bloqueados pelos navegadores) e o WebSocket não autenticaria pelo cookie. Servir tudo pela API resolve isso.
 - **Migrations na inicialização do container** (Fase 10): o plano grátis do Render não tem "pre-deploy command". Com uma instância só, rodar `prisma migrate deploy` antes de subir a API é seguro. Com várias instâncias, o certo seria um passo de release separado.
 - **Uma instância de Socket.IO** (Fase 10): para escalar horizontalmente seria preciso o adapter do Redis, para os eventos chegarem a quem está conectado em outra instância.
+- **Conta demo marcada no banco, não pelo username** (Extra): a coluna `is_demo` só é preenchida pelo seed. Se fosse "quem se chama visitante", alguém poderia cadastrar esse username antes e o botão logaria todo mundo na conta dessa pessoa.
+- **Ids do seed com data retroativa** (Extra): o app ordena por id (UUID v7), então o seed gera o id com o mesmo horário do `created_at`. Sem isso, um post "de 3 dias atrás" apareceria no topo do feed.
+- **Fotos do seed** (Extra): retratos do randomuser.me e fotos do Picsum (Unsplash) escolhidas por id para combinar com cada post. Sobem para o Cloudinary pelo mesmo upload assinado do app.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

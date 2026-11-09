@@ -21,6 +21,7 @@ describe('POST /api/auth/register', () => {
       email: 'ana@example.com',
       avatarUrl: null,
       createdAt: expect.any(String),
+      isDemo: false,
     });
     expect(res.body.user).not.toHaveProperty('passwordHash');
     expect(getCookie(res, 'access_token')).toBeTruthy();
@@ -110,6 +111,33 @@ describe('POST /api/auth/login', () => {
       expect(res.body.code).toBe('INVALID_CREDENTIALS');
     }
     expect(wrongPassword.body.message).toBe(unknownUser.body.message);
+  });
+});
+
+describe('POST /api/auth/demo', () => {
+  it('sem conta demo no banco, responde 404 e não loga ninguém', async () => {
+    const res = await request(app).post('/api/auth/demo');
+
+    expect(res.status).toBe(404);
+    expect(getCookie(res, 'access_token')).toBeUndefined();
+  });
+
+  it('loga na conta marcada como demo, nunca numa conta comum', async () => {
+    await registerAndLogin();
+    const { user: demo } = await registerAndLogin({
+      username: 'visitante',
+      email: 'visitante@example.com',
+    });
+    await prisma.user.update({ where: { id: demo.id }, data: { isDemo: true } });
+
+    const agent = createAgent();
+    const res = await agent.post('/api/auth/demo');
+
+    expect(res.status).toBe(200);
+    expect(res.body.user).toMatchObject({ username: 'visitante', isDemo: true });
+
+    const me = await agent.get('/api/auth/me');
+    expect(me.body.user.id).toBe(demo.id);
   });
 });
 

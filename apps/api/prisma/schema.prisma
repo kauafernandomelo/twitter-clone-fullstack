@@ -23,6 +23,9 @@ model User {
   website      String?  @db.VarChar(100)
   avatarUrl    String?  @map("avatar_url")
   bannerUrl    String?  @map("banner_url")
+  // Conta de visitante compartilhada (botão "Entrar como visitante"). Criada só pelo seed,
+  // nunca pelo cadastro: assim ninguém registra um username e vira a conta demo.
+  isDemo       Boolean  @default(false) @map("is_demo")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

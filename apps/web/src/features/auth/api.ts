@@ -48,6 +48,15 @@ export function useLogin() {
   });
 }
 
+/** "Entrar como visitante": sessão na conta demo compartilhada, sem senha. */
+export function useDemoLogin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<AuthResponse>('/auth/demo', { method: 'POST' }),
+    onSuccess: ({ user }) => queryClient.setQueryData(sessionQueryKey, user),
+  });
+}
+
 export function useRegister() {
   const queryClient = useQueryClient();
   return useMutation({

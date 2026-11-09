@@ -49,8 +49,14 @@ export async function updateProfile(userId: string, data: UpdateProfileData) {
   // guarda as imagens atuais para apagar do Cloudinary as que forem trocadas/removidas
   const before = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { avatarUrl: true, bannerUrl: true },
+    select: { avatarUrl: true, bannerUrl: true, isDemo: true },
   });
+
+  // A conta de visitante é a mesma para todo mundo: se desse para editar, uma pessoa
+  // trocaria o nome/foto que todos os outros visitantes veem.
+  if (before.isDemo) {
+    throw new AppError(403, 'A conta de visitante não pode editar o perfil', 'FORBIDDEN');
+  }
 
   const user = await prisma.user.update({
     where: { id: userId },
