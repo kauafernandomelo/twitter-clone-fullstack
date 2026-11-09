@@ -74,6 +74,10 @@ function applyFollowState(
       : data,
   );
   queryClient.setQueryData<UserSummary[]>(userKeys.suggestions, (users) => users?.map(update));
+  // resultados da busca de pessoas (e do autocomplete de @)
+  queryClient.setQueriesData<UserSummary[]>({ queryKey: ['users', 'search'] }, (users) =>
+    users?.map(update),
+  );
 }
 
 export function useToggleFollow() {

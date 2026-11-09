@@ -4,7 +4,9 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/AuthGuards';
 import { BookmarksPage } from '@/pages/BookmarksPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { ExplorePage } from '@/pages/ExplorePage';
 import { FollowListPage } from '@/pages/FollowListPage';
+import { HashtagPage } from '@/pages/HashtagPage';
 import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -28,12 +30,8 @@ export const routes: RouteObject[] = [
         element: <AppLayout />,
         children: [
           { path: '/home', element: <HomePage /> },
-          {
-            path: '/explore',
-            element: (
-              <ComingSoonPage title="Explorar" description="Busca de pessoas, posts e hashtags." />
-            ),
-          },
+          { path: '/explore', element: <ExplorePage /> },
+          { path: '/hashtag/:tag', element: <HashtagPage /> },
           {
             path: '/notifications',
             element: (
