@@ -13,12 +13,14 @@ import { MessagesPage } from '@/pages/MessagesPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { RouteErrorPage } from '@/pages/RouteErrorPage';
 import { TweetPage } from '@/pages/TweetPage';
 
 // Separado do createBrowserRouter para os testes montarem as mesmas rotas em memória.
 export const routes: RouteObject[] = [
   {
     element: <PublicOnlyRoute />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/', element: <LandingPage /> },
       { path: '/login', element: <LandingPage modal="login" /> },
@@ -27,6 +29,7 @@ export const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         element: <AppLayout />,

@@ -2,6 +2,7 @@ import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { SkeletonList } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
 import { useInView } from '@/hooks/use-in-view';
 
@@ -13,6 +14,8 @@ type InfiniteListProps<T> = {
   getKey: (item: T) => string;
   empty: ReactNode;
   errorMessage?: string;
+  /** silhueta de um item, mostrada (repetida) no primeiro carregamento no lugar do spinner */
+  skeleton?: ReactNode;
 };
 
 // Lista com scroll infinito: quando o sentinela do fim aparece, carrega a próxima página.
@@ -23,6 +26,7 @@ export function InfiniteList<T>({
   getKey,
   empty,
   errorMessage = 'Não foi possível carregar.',
+  skeleton,
 }: InfiniteListProps<T>) {
   const { data, isPending, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     query;
@@ -31,6 +35,7 @@ export function InfiniteList<T>({
   }, Boolean(hasNextPage));
 
   if (isPending) {
+    if (skeleton) return <SkeletonList item={skeleton} />;
     return (
       <div className="flex justify-center p-8">
         <Spinner />
