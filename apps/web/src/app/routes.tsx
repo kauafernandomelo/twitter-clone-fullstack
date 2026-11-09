@@ -1,9 +1,12 @@
 import type { RouteObject } from 'react-router';
 
+import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/AuthGuards';
+import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 
 // Separado do createBrowserRouter para os testes montarem as mesmas rotas em memória.
 export const routes: RouteObject[] = [
@@ -17,7 +20,43 @@ export const routes: RouteObject[] = [
   },
   {
     element: <ProtectedRoute />,
-    children: [{ path: '/home', element: <HomePage /> }],
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { path: '/home', element: <HomePage /> },
+          {
+            path: '/explore',
+            element: (
+              <ComingSoonPage title="Explorar" description="Busca de pessoas, posts e hashtags." />
+            ),
+          },
+          {
+            path: '/notifications',
+            element: (
+              <ComingSoonPage
+                title="Notificações"
+                description="Curtidas, respostas, menções e novos seguidores."
+              />
+            ),
+          },
+          {
+            path: '/messages',
+            element: (
+              <ComingSoonPage title="Mensagens" description="Conversas privadas em tempo real." />
+            ),
+          },
+          {
+            path: '/bookmarks',
+            element: (
+              <ComingSoonPage title="Salvos" description="Os posts que você salvar ficam aqui." />
+            ),
+          },
+          // rotas estáticas acima têm prioridade sobre este parâmetro
+          { path: '/:username', element: <ProfilePage /> },
+        ],
+      },
+    ],
   },
   { path: '*', element: <NotFoundPage /> },
 ];
