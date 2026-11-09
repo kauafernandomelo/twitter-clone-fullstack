@@ -33,6 +33,8 @@ model User {
   likes         Like[]
   bookmarks     Bookmark[]
   mentions      Mention[]
+  notifications Notification[] @relation("NotificationRecipient")
+  actedIn       Notification[] @relation("NotificationActor")
 
   @@map("users")
 }
@@ -62,12 +64,13 @@ model Tweet {
   // banco a cada INSERT/UPDATE do conteúdo; o Prisma só precisa saber que a coluna existe.
   searchVector Unsupported("tsvector")? @map("search_vector")
 
-  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  media     TweetMedia[]
-  likes     Like[]
-  bookmarks Bookmark[]
-  hashtags  TweetHashtag[]
-  mentions  Mention[]
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  media         TweetMedia[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  hashtags      TweetHashtag[]
+  mentions      Mention[]
+  notifications Notification[]
 
   replyTo   Tweet?  @relation("Replies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   Tweet[] @relation("Replies")
@@ -195,4 +198,38 @@ model Mention {
   @@id([tweetId, userId])
   @@index([userId])
   @@map("mentions")
+}
+
+enum NotificationType {
+  LIKE
+  RETWEET
+  FOLLOW
+  REPLY
+  QUOTE
+  MENTION
+
+  @@map("notification_type")
+}
+
+// "actor fez <type> (no post tweet_id) e recipient é avisado".
+// Curtidas, reposts e follows são agrupados na leitura; respostas, citações e menções
+// apontam para o próprio post novo (tweet_id = a resposta/citação/post com a menção).
+model Notification {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  recipientId String           @map("recipient_id") @db.Uuid
+  actorId     String           @map("actor_id") @db.Uuid
+  type        NotificationType
+  tweetId     String?          @map("tweet_id") @db.Uuid
+  readAt      DateTime?        @map("read_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  recipient User   @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User   @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  // post apagado = notificações sobre ele somem junto
+  tweet     Tweet? @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, id(sort: Desc)])
+  @@index([recipientId, readAt])
+  @@index([actorId, type, tweetId])
+  @@map("notifications")
 }

@@ -23,9 +23,9 @@ describe('layout', () => {
     renderApp('/home');
 
     const nav = within(await screen.findByRole('navigation', { name: 'Principal' }));
-    await userEvent.click(nav.getByRole('link', { name: 'Notificações' }));
+    await userEvent.click(nav.getByRole('link', { name: 'Mensagens' }));
 
-    expect(await screen.findByRole('heading', { name: 'Notificações' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Mensagens' })).toBeVisible();
     expect(screen.getByText('Em breve')).toBeVisible();
   });
 });

@@ -15,6 +15,8 @@ export default defineConfig({
     // Assim os cookies httpOnly de auth funcionam sem dor de cabeça com CORS/SameSite.
     proxy: {
       '/api': 'http://localhost:3333',
+      // Socket.IO (notificações em tempo real) pela mesma origem, com upgrade para WebSocket
+      '/socket.io': { target: 'http://localhost:3333', ws: true },
     },
   },
   test: {

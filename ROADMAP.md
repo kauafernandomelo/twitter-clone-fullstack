@@ -120,13 +120,20 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] **Autocomplete de @menções** no compositor (↑↓, Enter/Tab, Esc, mouse; padrão ARIA combobox)
 - [x] Testes: 10 novos na API + 8 novos no front
 
-## Fase 7 — Notificações
+## Fase 7 — Notificações ✅
 
-- [ ] Model `Notification` (curtiu, seguiu, respondeu, retweetou, mencionou)
-- [ ] Página de notificações (todas / menções)
-- [ ] Socket.IO autenticado
-- [ ] Contador de não lidas em tempo real
-- [ ] Testes
+- [x] Model `Notification` (destinatário, autor da ação, tipo, post) com enum de tipos
+- [x] Gatilhos: curtiu, repostou, respondeu, citou, mencionou (inclusive ao editar) e seguiu
+- [x] Ações em si mesmo não notificam; quem recebe "respondeu" não recebe também "mencionou"
+- [x] Desfazer (descurtir, desfazer repost, deixar de seguir, tirar a menção) remove a notificação
+- [x] Notificações criadas só depois do commit; post apagado leva junto as notificações dele (`CASCADE`)
+- [x] **Agrupamento** em SQL: curtidas/reposts do mesmo post e follows do mesmo dia viram uma linha ("Maria e mais 2 pessoas curtiram")
+- [x] Página de notificações com abas **Todas** / **Menções**; itens não lidos destacados
+- [x] **Tempo real com Socket.IO**: mesma porta da API, autenticado pelo cookie httpOnly, uma sala por usuário
+- [x] Reconexão renova a sessão se o token expirou
+- [x] Contador de não lidas no sino (sidebar e mobile) e no título da aba: "(3) Twitter Clone"
+- [x] Abrir a página marca tudo como lido (as outras abas abertas também zeram)
+- [x] Testes: 12 novos na API (inclusive socket real) + 5 novos no front
 
 ## Fase 8 — Mensagens diretas
 
@@ -178,4 +185,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Migrations fora do modo interativo** (Fase 5/6): o SQL sai de `prisma migrate diff`, as partes que o Prisma não expressa (CHECK, extensão, função, trigger) são escritas à mão, e tudo é aplicado com `migrate deploy`.
 - **Busca por relevância pagina por offset** (Fase 6): não existe cursor natural num ranking; limitado a 1000 resultados. "Mais recentes" pagina por id, como o resto do app.
 - **Hashtags de posts antigos** (Fase 6): só os posts criados ou editados depois desta fase têm hashtags indexadas. A busca full-text cobre todos (a migration preencheu o índice).
+- **Agrupamento na leitura, não na escrita** (Fase 7): cada ação é uma linha simples (fácil de desfazer); a query agrupa com `GROUP BY` sobre uma chave calculada. O cursor é o id mais recente do grupo; um grupo que recebe uma curtida nova sobe para o topo, como no Twitter.
+- **Socket.IO só avisa, não carrega dados** (Fase 7): o evento diz "mudou algo" e o front recarrega via REST. Uma única fonte de verdade, sem duplicar a serialização no socket.
+- **Sem Web Push por enquanto** (Fase 7): notificação com a aba fechada exige service worker, chaves VAPID e HTTPS; faz mais sentido depois do deploy (Fase 10).
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

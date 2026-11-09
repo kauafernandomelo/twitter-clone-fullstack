@@ -2,6 +2,7 @@ import { Feather } from 'lucide-react';
 import { NavLink } from 'react-router';
 
 import { useCurrentUser } from '@/features/auth/api';
+import { UnreadBadge } from '@/features/notifications/components/UnreadBadge';
 import { useOpenCompose } from '@/features/tweets/compose-context';
 
 import { getNavItems } from './nav-items';
@@ -29,7 +30,10 @@ export function MobileNav() {
         {items.map(({ label, to, icon: Icon }) => (
           <NavLink key={to} to={to} aria-label={label} className="flex flex-1 justify-center py-3">
             {({ isActive }) => (
-              <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
+              <span className="relative">
+                <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
+                {to === '/notifications' && <UnreadBadge />}
+              </span>
             )}
           </NavLink>
         ))}

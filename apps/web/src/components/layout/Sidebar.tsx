@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/Button';
 import { useCurrentUser } from '@/features/auth/api';
+import { UnreadBadge } from '@/features/notifications/components/UnreadBadge';
 import { useOpenCompose } from '@/features/tweets/compose-context';
 import { cn } from '@/lib/cn';
 
@@ -31,7 +32,10 @@ export function Sidebar() {
             <NavLink key={to} to={to} aria-label={label} className="group py-1">
               {({ isActive }) => (
                 <span className="inline-flex items-center gap-5 rounded-full p-3 transition-colors group-hover:bg-foreground/10 xl:pr-6">
-                  <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
+                  <span className="relative">
+                    <Icon className="size-[26px]" strokeWidth={isActive ? 2.75 : 1.75} />
+                    {to === '/notifications' && <UnreadBadge />}
+                  </span>
                   <span className={cn('hidden text-xl xl:inline', isActive && 'font-bold')}>
                     {label}
                   </span>

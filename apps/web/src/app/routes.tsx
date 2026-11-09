@@ -10,6 +10,7 @@ import { HashtagPage } from '@/pages/HashtagPage';
 import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { NotificationsPage } from '@/pages/NotificationsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { TweetPage } from '@/pages/TweetPage';
 
@@ -32,15 +33,7 @@ export const routes: RouteObject[] = [
           { path: '/home', element: <HomePage /> },
           { path: '/explore', element: <ExplorePage /> },
           { path: '/hashtag/:tag', element: <HashtagPage /> },
-          {
-            path: '/notifications',
-            element: (
-              <ComingSoonPage
-                title="Notificações"
-                description="Curtidas, respostas, menções e novos seguidores."
-              />
-            ),
-          },
+          { path: '/notifications', element: <NotificationsPage /> },
           {
             path: '/messages',
             element: (
