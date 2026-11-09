@@ -1,5 +1,7 @@
 import type { Message } from '@twitter-clone/shared';
+import { useState } from 'react';
 
+import { Lightbox } from '@/components/ui/Lightbox';
 import { RichText } from '@/features/tweets/components/RichText';
 import { withTransform } from '@/lib/cloudinary';
 import { cn } from '@/lib/cn';
@@ -12,6 +14,8 @@ type MessageBubbleProps = {
 };
 
 export function MessageBubble({ message, mine, footer }: MessageBubbleProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
     <div
       className={cn(
@@ -21,14 +25,28 @@ export function MessageBubble({ message, mine, footer }: MessageBubbleProps) {
       )}
     >
       {message.image && (
-        <img
-          src={withTransform(message.image.url, 'c_limit,w_600,q_auto,f_auto')}
-          alt="Imagem enviada"
-          width={message.image.width}
-          height={message.image.height}
-          style={{ aspectRatio: `${message.image.width} / ${message.image.height}` }}
-          className="mb-1 max-h-[320px] w-auto max-w-[75%] rounded-2xl object-cover"
-        />
+        <>
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            aria-label="Abrir imagem enviada em tela cheia"
+            className="mb-1 max-w-[75%] cursor-zoom-in"
+          >
+            <img
+              src={withTransform(message.image.url, 'c_limit,w_600,q_auto,f_auto')}
+              alt="Imagem enviada"
+              width={message.image.width}
+              height={message.image.height}
+              style={{ aspectRatio: `${message.image.width} / ${message.image.height}` }}
+              className="max-h-[320px] w-auto rounded-2xl object-cover"
+            />
+          </button>
+          <Lightbox
+            images={[{ ...message.image, alt: 'Imagem enviada' }]}
+            index={lightboxOpen ? 0 : null}
+            onIndexChange={(index) => setLightboxOpen(index !== null)}
+          />
+        </>
       )}
       {message.content && (
         <div

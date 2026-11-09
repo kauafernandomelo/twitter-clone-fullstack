@@ -53,7 +53,7 @@ export function QuotedTweetCard({ quote }: { quote: QuotedTweet | null }) {
       </div>
       {quote.media.length > 0 && (
         <div className="[&>div]:mt-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-b-0">
-          <TweetMediaGrid media={quote.media} />
+          <TweetMediaGrid media={quote.media} interactive={false} />
         </div>
       )}
     </Link>
