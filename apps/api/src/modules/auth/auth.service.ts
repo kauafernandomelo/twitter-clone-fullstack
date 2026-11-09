@@ -29,6 +29,7 @@ const authUserSelect = {
   email: true,
   avatarUrl: true,
   createdAt: true,
+  isDemo: true,
 } satisfies Prisma.UserSelect;
 
 type AuthUserRow = Prisma.UserGetPayload<{ select: typeof authUserSelect }>;
@@ -114,6 +115,22 @@ export async function login({ identifier, password }: LoginData) {
 
   const { passwordHash: _, ...authUser } = user;
   return { user: toAuthUser(authUser), tokens: await issueTokens(user.id) };
+}
+
+/**
+ * "Entrar como visitante": abre uma sessão na conta demo criada pelo seed.
+ * Sem senha de propósito; a conta não pode editar o perfil (ver users.service).
+ */
+export async function loginAsDemo() {
+  const user = await prisma.user.findFirst({
+    where: { isDemo: true },
+    select: authUserSelect,
+    orderBy: { id: 'asc' },
+  });
+  if (!user) {
+    throw new AppError(404, 'A conta de visitante não está disponível no momento', 'NOT_FOUND');
+  }
+  return { user: toAuthUser(user), tokens: await issueTokens(user.id) };
 }
 
 export async function refresh(rawToken: string | undefined) {

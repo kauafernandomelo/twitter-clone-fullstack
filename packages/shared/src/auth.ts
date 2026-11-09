@@ -86,6 +86,8 @@ export type AuthUser = {
   email: string;
   avatarUrl: string | null;
   createdAt: string;
+  /** Conta de visitante compartilhada: o perfil não pode ser editado */
+  isDemo: boolean;
 };
 
 export type AuthResponse = { user: AuthUser };
