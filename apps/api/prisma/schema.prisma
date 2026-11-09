@@ -28,6 +28,8 @@ model User {
 
   refreshTokens RefreshToken[]
   tweets        Tweet[]
+  following     Follow[]       @relation("UserFollowing")
+  followers     Follow[]       @relation("UserFollowers")
 
   @@map("users")
 }
@@ -82,4 +84,21 @@ model RefreshToken {
   @@index([userId])
   @@index([familyId])
   @@map("refresh_tokens")
+}
+
+// "follower segue following". Id próprio (UUID v7) para paginar as listas de seguidores
+// por cursor, no mesmo padrão dos tweets; o par (follower, following) é único.
+model Follow {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId, id(sort: Desc)])
+  @@index([followingId, id(sort: Desc)])
+  @@map("follows")
 }
