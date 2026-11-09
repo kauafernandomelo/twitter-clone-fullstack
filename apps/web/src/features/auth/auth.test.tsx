@@ -38,7 +38,7 @@ describe('rotas protegidas', () => {
     mockApi({ 'GET /auth/me': { status: 200, body: { user } } });
     const { router } = renderApp('/');
 
-    expect(await screen.findByRole('heading', { name: 'Olá, Ana Souza!' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/home');
   });
 
@@ -53,7 +53,7 @@ describe('rotas protegidas', () => {
     });
     renderApp('/home');
 
-    expect(await screen.findByRole('heading', { name: 'Olá, Ana Souza!' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeVisible();
   });
 });
 
@@ -90,7 +90,7 @@ describe('login', () => {
     await userEvent.type(dialog.getByLabelText('Senha'), 'senha-forte-123');
     await userEvent.click(dialog.getByRole('button', { name: 'Entrar' }));
 
-    expect(await screen.findByRole('heading', { name: 'Olá, Ana Souza!' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/home');
     expect(sentBody).toEqual({ identifier: 'ana_souza', password: 'senha-forte-123' });
   });
@@ -131,7 +131,7 @@ describe('cadastro', () => {
 
     await fillSignup();
 
-    expect(await screen.findByRole('heading', { name: 'Olá, Ana Souza!' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeVisible();
   });
 
   it('mostra o erro no campo certo quando o username já existe', async () => {

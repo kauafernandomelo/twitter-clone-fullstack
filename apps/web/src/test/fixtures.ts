@@ -19,6 +19,7 @@ export const ownProfile: UserProfile = {
   avatarUrl: null,
   bannerUrl: null,
   createdAt: '2026-11-09T12:00:00.000Z',
+  tweetsCount: 0,
 };
 
 export const otherProfile: UserProfile = {

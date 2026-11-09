@@ -13,6 +13,21 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
   };
 }
 
+// jsdom não tem IntersectionObserver (usado no scroll infinito). Nos testes ele nunca dispara.
+if (typeof window !== 'undefined' && !('IntersectionObserver' in window)) {
+  class IntersectionObserverStub {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  }
+  // atribuição direta (e não vi.stubGlobal): o unstubAllGlobals do afterEach não pode removê-lo
+  globalThis.IntersectionObserver =
+    IntersectionObserverStub as unknown as typeof IntersectionObserver;
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
