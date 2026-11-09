@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/Button';
 import { useCurrentUser } from '@/features/auth/api';
+import { useOpenCompose } from '@/features/tweets/compose-context';
 import { cn } from '@/lib/cn';
 
 import { AccountMenu } from './AccountMenu';
@@ -12,6 +13,7 @@ import { getNavItems } from './nav-items';
 // Desktop: ícone + texto (xl). Tablet: só ícones. Mobile: escondida (vira a MobileNav).
 export function Sidebar() {
   const user = useCurrentUser();
+  const openCompose = useOpenCompose();
 
   return (
     <header className="sticky top-0 hidden h-dvh w-[88px] shrink-0 flex-col justify-between px-2 py-1 sm:flex xl:w-[275px] xl:px-3">
@@ -39,12 +41,11 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <Button size="lg" disabled title="Em breve" className="mt-4 hidden w-[90%] xl:inline-flex">
+        <Button size="lg" onClick={openCompose} className="mt-4 hidden w-[90%] xl:inline-flex">
           Postar
         </Button>
         <Button
-          disabled
-          title="Em breve"
+          onClick={openCompose}
           aria-label="Postar"
           className="mt-4 size-[52px] p-0 xl:hidden"
         >

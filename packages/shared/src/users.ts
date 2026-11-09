@@ -13,6 +13,7 @@ export type UserProfile = {
   avatarUrl: string | null;
   bannerUrl: string | null;
   createdAt: string;
+  tweetsCount: number;
 };
 
 export type UserProfileResponse = { user: UserProfile };

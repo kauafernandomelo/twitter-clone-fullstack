@@ -1,8 +1,9 @@
 import { Ellipsis } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 
 import { Avatar } from '@/components/Avatar';
 import { useCurrentUser, useLogout } from '@/features/auth/api';
+import { useDismiss } from '@/hooks/use-dismiss';
 import { cn } from '@/lib/cn';
 
 type AccountMenuProps = {
@@ -20,22 +21,8 @@ export function AccountMenu({ compact, placement = 'top', className }: AccountMe
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
-  // fecha ao clicar fora ou apertar ESC
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
+  useDismiss(containerRef, open, close);
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>

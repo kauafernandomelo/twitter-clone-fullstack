@@ -48,7 +48,11 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader title={profile.name} subtitle="0 posts" showBack />
+      <PageHeader
+        title={profile.name}
+        subtitle={`${profile.tweetsCount} ${profile.tweetsCount === 1 ? 'post' : 'posts'}`}
+        showBack
+      />
       <ProfileHeader profile={profile} isOwnProfile={profile.id === currentUser.id} />
       <ProfileTabs username={profile.username} />
     </>

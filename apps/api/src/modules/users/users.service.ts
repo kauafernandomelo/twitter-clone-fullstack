@@ -18,12 +18,13 @@ export const profileSelect = {
   avatarUrl: true,
   bannerUrl: true,
   createdAt: true,
+  _count: { select: { tweets: true } },
 } satisfies Prisma.UserSelect;
 
 type ProfileRow = Prisma.UserGetPayload<{ select: typeof profileSelect }>;
 
-export function toUserProfile(user: ProfileRow): UserProfile {
-  return { ...user, createdAt: user.createdAt.toISOString() };
+export function toUserProfile({ _count, ...user }: ProfileRow): UserProfile {
+  return { ...user, createdAt: user.createdAt.toISOString(), tweetsCount: _count.tweets };
 }
 
 export async function getProfileByUsername(username: string) {

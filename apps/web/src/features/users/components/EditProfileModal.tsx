@@ -27,11 +27,14 @@ const CROP_CONFIG = {
   banner: { aspect: 3, shape: 'rect', output: { width: 1500, height: 500 } },
 } as const;
 
+// Só avatar e banner passam por este modal (imagens de post usam o compositor)
+type ProfileImageKind = Extract<UploadKind, 'avatar' | 'banner'>;
+
 // Estado de cada imagem no modal:
 // undefined = não mexeu | Blob = nova imagem recortada | null = removida
-type PendingImages = Partial<Record<UploadKind, Blob | null>>;
+type PendingImages = Partial<Record<ProfileImageKind, Blob | null>>;
 
-type Cropping = { kind: UploadKind; src: string; area: Area | null };
+type Cropping = { kind: ProfileImageKind; src: string; area: Area | null };
 
 type EditProfileModalProps = { profile: UserProfile; open: boolean; onClose: () => void };
 
@@ -84,7 +87,7 @@ type EditProfileFormProps = {
   profile: UserProfile;
   onSaved: () => void;
   cropping: Cropping | null;
-  onStartCrop: (kind: UploadKind, src: string) => void;
+  onStartCrop: (kind: ProfileImageKind, src: string) => void;
   onCropAreaChange: (area: Area) => void;
   onCropDone: () => void;
 };
@@ -125,7 +128,7 @@ function EditProfileForm({
       for (const kind of ['avatar', 'banner'] as const) {
         const image = images[kind];
         if (image === undefined) continue;
-        input[`${kind}Url`] = image === null ? null : await uploadImage(image, kind);
+        input[`${kind}Url`] = image === null ? null : (await uploadImage(image, kind)).url;
       }
       await updateProfile.mutateAsync(input);
       onSaved();
@@ -134,7 +137,7 @@ function EditProfileForm({
     }
   });
 
-  function pickFile(kind: UploadKind, file: File | undefined) {
+  function pickFile(kind: ProfileImageKind, file: File | undefined) {
     if (!file) return;
     const error = validateImageFile(file);
     setImageError(error);
@@ -297,7 +300,7 @@ function ImagePickerButton({ label, onPick }: { label: string; onPick: (file?: F
 // URLs temporárias (blob:) para pré-visualizar as imagens recortadas, liberadas ao trocar/fechar.
 function useObjectUrls(images: PendingImages) {
   const urls = useMemo(() => {
-    const next: Partial<Record<UploadKind, string>> = {};
+    const next: Partial<Record<ProfileImageKind, string>> = {};
     for (const kind of ['avatar', 'banner'] as const) {
       const image = images[kind];
       if (image) next[kind] = URL.createObjectURL(image);
