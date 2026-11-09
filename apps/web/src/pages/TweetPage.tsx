@@ -9,6 +9,7 @@ import { useReplies, useThread, useTweet } from '@/features/tweets/api';
 import { EditedLabel } from '@/features/tweets/components/EditedLabel';
 import { QuotedTweetCard } from '@/features/tweets/components/QuotedTweetCard';
 import { ReplyingTo } from '@/features/tweets/components/ReplyingTo';
+import { RichText } from '@/features/tweets/components/RichText';
 import { TweetActionBar } from '@/features/tweets/components/TweetActionBar';
 import { TweetCard } from '@/features/tweets/components/TweetCard';
 import { TweetComposer } from '@/features/tweets/components/TweetComposer';
@@ -107,11 +108,7 @@ export function TweetPage() {
             <ReplyingTo tweet={tweet} />
           </div>
         )}
-        {tweet.content && (
-          <p className="mt-3 text-[17px] leading-6 break-words whitespace-pre-wrap">
-            {tweet.content}
-          </p>
-        )}
+        {tweet.content && <RichText text={tweet.content} className="mt-3 text-[17px] leading-6" />}
         <TweetMediaGrid media={tweet.media} />
         {tweet.isQuote && <QuotedTweetCard quote={tweet.quote} />}
 
