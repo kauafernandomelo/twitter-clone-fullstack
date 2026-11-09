@@ -59,15 +59,22 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Testes: 15 novos na API + 8 novos no front
 - [ ] Testar o upload real no Cloudinary (falta configurar as credenciais no `.env`)
 
-## Fase 3 — Tweets
+## Fase 3 — Tweets ✅
 
-- [ ] Model `Tweet` + `TweetMedia`
-- [ ] Criar tweet (280 caracteres, contador circular, até 4 imagens)
-- [ ] Apagar o próprio tweet
-- [ ] Componente `TweetCard`
-- [ ] Página do tweet (`/:username/status/:id`)
-- [ ] Aba "Posts" no perfil com paginação por cursor
-- [ ] Testes
+- [x] Models `Tweet` e `TweetMedia` (ids UUID v7 ordenados pelo tempo, imagens com largura/altura)
+- [x] Criar post: até 280 caracteres (emoji conta como 1) e até 4 imagens
+- [x] Upload das imagens do post direto para o Cloudinary (pasta `tweet` do usuário, validada na API)
+- [x] **Editar** o texto a qualquer momento, com o selo **"· Editado"** (passando o mouse mostra quando)
+- [x] Salvar sem mudar nada não marca como editado; post sem imagem não pode ficar vazio
+- [x] **Apagar** com confirmação (as imagens vão junto, em cascata)
+- [x] Só o autor vê o menu "..." e a API responde 403 para os outros
+- [x] Compositor no topo da home + modal "Postar" (sidebar e botão flutuante no mobile)
+- [x] Contador circular de caracteres (amarelo nos últimos 20, vermelho acima do limite)
+- [x] `TweetCard`: tempo relativo ("5 min", "3 h", "9 de nov"), grade de 1 a 4 imagens, clique abre o post
+- [x] Página do post (`/:username/status/:id`) com data completa e URL corrigida se o @ estiver errado
+- [x] Timeline global na home + aba "Posts" no perfil, com scroll infinito (paginação por cursor)
+- [x] Contador de posts no cabeçalho do perfil
+- [x] Testes: 18 novos na API + 12 novos no front
 
 ## Fase 4 — Seguir + Feed
 
@@ -144,5 +151,8 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Upload direto pro Cloudinary** (Fase 2): a API só assina (pasta + timestamp) e o arquivo vai do navegador para o Cloudinary, sem consumir banda nem memória do nosso servidor.
 - **Recorte no navegador** (Fase 2): o canvas recorta e redimensiona antes do upload (uma foto de 4 MB vira ~100 KB).
 - **Imagens antigas não são apagadas do Cloudinary** (Fase 2): ao trocar o avatar, a imagem anterior fica lá. Limpeza (via API admin do Cloudinary) fica para a Fase 9.
-- **Contadores de posts e seguidores**: o "0 posts" do cabeçalho do perfil vira um valor real na Fase 3, e os seguidores entram na Fase 4.
+- **Seguidores**: os contadores entram na Fase 4.
+- **Edição só do texto** (Fase 3): a imagem não muda depois de publicada; para trocar, apaga e posta de novo. Não há limite de tempo para editar nem histórico de versões; dá para adicionar depois se fizer falta.
+- **Paginação por cursor com UUID v7** (Fase 3): o id já nasce ordenado pelo tempo, então `WHERE id < cursor ORDER BY id DESC` pagina sem `OFFSET` e sem índice extra.
+- **Timeline global provisória** (Fase 3): a home mostra posts de todo mundo e vira "Para você" na Fase 4, ao lado de "Seguindo".
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.
