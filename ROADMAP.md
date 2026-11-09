@@ -23,20 +23,23 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Testes: Vitest + Supertest (API) e Vitest + Testing Library (web)
 - [x] `.env.example`, README com o passo a passo
 
-## Fase 1 — Autenticação
+## Fase 1 — Autenticação ✅
 
-- [ ] Models `User` e `RefreshToken` + primeira migration
-- [ ] Schemas Zod de cadastro/login no `packages/shared`
-- [ ] `POST /api/auth/register` (hash argon2, username e email únicos)
-- [ ] `POST /api/auth/login` / `POST /api/auth/logout`
-- [ ] `POST /api/auth/refresh` (rotação de refresh token)
-- [ ] `GET /api/auth/me` + middleware `requireAuth`
-- [ ] Rate limit nas rotas de auth
-- [ ] Página de **Cadastro**
-- [ ] Página de **Login**
-- [ ] Contexto de sessão no front + rotas protegidas/públicas
-- [ ] Renovação automática do token quando recebe 401
-- [ ] Testes de integração das rotas de auth + testes dos formulários
+- [x] Models `User` e `RefreshToken` + primeira migration (ids UUID v7, tabelas em snake_case)
+- [x] Schemas Zod de cadastro/login no `packages/shared` (mesma validação no front e na API)
+- [x] `POST /api/auth/register` (hash argon2id, username e email únicos, 409 apontando o campo)
+- [x] `POST /api/auth/login` com email **ou** @username (mesma mensagem para usuário inexistente e senha errada, com tempo de resposta igual)
+- [x] `POST /api/auth/logout` (revoga a sessão e limpa os cookies)
+- [x] `POST /api/auth/refresh` com rotação de refresh token + detecção de reuso (revoga a família)
+- [x] `GET /api/auth/me` + middleware `requireAuth`
+- [x] Cookies `httpOnly` + `SameSite=Lax`; refresh token restrito ao path `/api/auth`
+- [x] Rate limit nas rotas de login e cadastro (20 tentativas a cada 15 min por IP)
+- [x] Landing page + modais de **Cadastro** e **Login** (rotas `/signup` e `/login` abrem direto)
+- [x] Componentes de UI: `Button`, `TextField` (label flutuante), `PasswordField`, `Modal` (`<dialog>` nativo), `Spinner`
+- [x] Sessão no TanStack Query + `ProtectedRoute` / `PublicOnlyRoute` (volta para a página de origem depois do login)
+- [x] Renovação automática do token quando recebe 401 (um único refresh para requests simultâneas)
+- [x] Erros da API mapeados para os campos do formulário
+- [x] Testes: 17 de integração da API (banco real de teste) + 9 de fluxo no front
 
 ## Fase 2 — Layout + Perfil
 
@@ -126,4 +129,8 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **TypeScript 6.0** (Fase 0): o TS 7 (compilador nativo) ainda não é suportado pelo `typescript-eslint`.
 - **Prisma 7.10** (Fase 0): a tag `latest` do npm aponta para um RC da v8, então fixamos a última versão estável.
 - **Postgres nas portas 5434/5435** (Fase 0): a 5432 já está ocupada por um Postgres instalado no sistema.
+- **Username sempre minúsculo** (Fase 1): garante unicidade sem diferenciar maiúsculas e URLs estáveis (`/fulano`). O usuário pode digitar maiúsculas; normalizamos.
+- **Refresh token opaco, não JWT** (Fase 1): fica salvo (como hash SHA-256) no banco para poder ser revogado. Há uma janela de 10 s de tolerância na rotação para não derrubar quem tem duas abas abertas.
+- **Cookies em produção** (pendente na Fase 10): hoje é `SameSite=Lax` com proxy na mesma origem. No deploy, usar rewrite da Vercel (`/api` → API) para manter a mesma origem e evitar `SameSite=None`.
+- **Prisma 7 não roda `generate` no `migrate dev`** (Fase 1): o script `db:migrate` já encadeia os dois.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.
