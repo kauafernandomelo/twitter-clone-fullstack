@@ -11,5 +11,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     // os arquivos de teste dividem o mesmo banco: rodam em sequência
     fileParallelism: false,
+    // argon2 é lento de propósito; com a máquina carregada, 5 s (padrão) pode não bastar
+    testTimeout: 15_000,
   },
 });

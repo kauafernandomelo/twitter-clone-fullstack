@@ -13,6 +13,7 @@ import {
 import { type Request, Router } from 'express';
 
 import { parseIdParam } from '../../lib/params';
+import { messageRateLimit } from '../../middlewares/rate-limit';
 import { getUserId, requireAuth } from '../../middlewares/require-auth';
 import * as messagesService from './messages.service';
 
@@ -30,7 +31,7 @@ conversationsRouter.get('/', async (req, res) => {
   res.json(page satisfies Paginated<ConversationSummary>);
 });
 
-conversationsRouter.post('/', async (req, res) => {
+conversationsRouter.post('/', messageRateLimit, async (req, res) => {
   const { username } = startConversationSchema.parse(req.body);
   const conversation = await messagesService.startConversation(getUserId(req), username);
   res.json({ conversation } satisfies ConversationResponse);
@@ -55,7 +56,7 @@ conversationsRouter.get('/:id/messages', async (req, res) => {
   res.json(page satisfies Paginated<Message>);
 });
 
-conversationsRouter.post('/:id/messages', async (req, res) => {
+conversationsRouter.post('/:id/messages', messageRateLimit, async (req, res) => {
   const data = sendMessageSchema.parse(req.body);
   const message = await messagesService.sendMessage(getUserId(req), conversationId(req), data);
   res.status(201).json({ message } satisfies MessageResponse);

@@ -151,13 +151,39 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - [x] Bolinha de conversas não lidas no ícone de Mensagens
 - [x] Testes: 10 novos na API (inclusive socket real) + 11 novos no front
 
-## Fase 9 — Polimento
+## Fase 9 — Polimento ✅
 
-- [ ] Tema claro/escuro
-- [ ] Skeletons, estados vazios e de erro
-- [ ] Acessibilidade (foco, aria, navegação por teclado)
-- [ ] Layout mobile (barra inferior)
-- [ ] Rate limiting global e revisão de segurança
+- [x] **Tema claro e escuro**: segue o sistema por padrão; escolha em "Aparência" (menu da conta) salva no navegador
+- [x] Sem "piscar" de tema ao carregar (script inline no `index.html` aplica antes da pintura)
+- [x] Cores como variáveis CSS (`@theme inline`) e sombra dos menus como token (`shadow-popover`)
+- [x] **Skeletons** no primeiro carregamento de posts, pessoas e conversas
+- [x] **Tela de erro** amigável para erros inesperados de renderização (`errorElement`)
+- [x] **Lightbox**: imagem em tela cheia (posts e chat), com setas ←/→, contador e ESC
+- [x] Acessibilidade: link "Pular para o conteúdo", foco visível só para teclado, respeito a `prefers-reduced-motion`
+- [x] **axe-core nos testes**: 7 telas sem violações (landing, home, perfil, post, lightbox, notificações, chat)
+- [x] Corrigido: `role="combobox"` em `<textarea>` (inválido) no autocomplete de menções
+- [x] **Rate limit**: teto global por IP + limites por ação contados por usuário (postar, curtir/repostar/salvar, seguir, mensagens, upload)
+- [x] Limite de eventos "digitando" por conexão no socket
+- [x] **Limpeza no Cloudinary**: apaga avatar/banner substituídos e as imagens de posts apagados (assinado, em segundo plano)
+- [x] **Segurança**: tokens de sessão (cookie/set-cookie/authorization) ocultados nos logs
+- [x] `TRUST_PROXY` configurável para o rate limit funcionar atrás de proxy em produção
+- [x] Testes: 7 novos na API + 9 novos no front; testes do front robustos com a máquina sob carga
+
+### Revisão de segurança (Fase 9)
+
+| Risco                   | Proteção                                                                 |
+| ----------------------- | ------------------------------------------------------------------------ |
+| Roubo de sessão via XSS | Tokens só em cookie `httpOnly`; React escapa o texto; links só `http(s)` |
+| CSRF                    | Cookies `SameSite=Lax` (não vão em POST vindo de outro site)             |
+| Força bruta / abuso     | Rate limit no login/cadastro, global por IP e por ação/usuário           |
+| Enumeração de contas    | Mesma mensagem e mesmo tempo para usuário inexistente e senha errada     |
+| Roubo de refresh token  | Rotação + detecção de reuso (revoga a família)                           |
+| Acesso indevido         | Autorização no service (autor, participante); 404 para conversa alheia   |
+| SQL injection           | Prisma + `$queryRaw` com template (parâmetros sempre separados do SQL)   |
+| Imagens de terceiros    | Só URLs da pasta do próprio usuário no nosso Cloudinary                  |
+| Vazamento em logs       | `redact` dos cabeçalhos com tokens                                       |
+| Payload gigante         | `express.json` com limite de 100 kb; textos com tamanho máximo           |
+| Erros internos          | Handler único: nunca devolve stack trace                                 |
 
 ## Fase 10 — Deploy + CI
 
@@ -198,4 +224,6 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Sem Web Push por enquanto** (Fase 7): notificação com a aba fechada exige service worker, chaves VAPID e HTTPS; faz mais sentido depois do deploy (Fase 10).
 - **No chat, o socket leva a mensagem** (Fase 8): nas notificações o evento só avisa "mudou"; no chat, a mensagem vai junto para aparecer instantaneamente. Ela entra no cache sem duplicar, porque chega pela resposta do POST e pelo eco do socket.
 - **Listeners de socket independentes da conexão** (Fase 8): uma página aberta direto pela URL registra listeners antes de o layout abrir a conexão (os efeitos do React rodam de dentro para fora). O `lib/socket` guarda os listeners e os liga quando a conexão nasce. Bug encontrado na checagem visual, coberto por teste.
+- **Tema salvo no navegador, não na conta** (Fase 9): é uma preferência do dispositivo (no celular escuro, no PC claro). Dá para sincronizar na conta depois, se fizer falta.
+- **Limpeza do Cloudinary em segundo plano** (Fase 9): se o Cloudinary falhar, a ação da pessoa não falha junto. Imagens enviadas e nunca usadas (post cancelado) continuam lá; limpar isso exigiria um job periódico.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

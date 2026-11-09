@@ -50,7 +50,7 @@ export function Dropdown({
           id={menuId}
           role="menu"
           className={cn(
-            'absolute top-0 z-20 min-w-[200px] overflow-hidden rounded-xl border border-border bg-background py-1 shadow-[0_0_15px_rgba(255,255,255,0.2)]',
+            'absolute top-0 z-20 min-w-[200px] overflow-hidden rounded-xl border border-border bg-background py-1 shadow-popover',
             align === 'right' ? 'right-0' : 'left-0',
           )}
         >

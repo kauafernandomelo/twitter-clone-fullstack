@@ -15,6 +15,9 @@ const envSchema = z.object({
   WEB_ORIGIN: z.url(),
   JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
   // Opcionais: sem elas a API sobe normalmente, só o upload de imagens fica desativado.
+  // Quantos proxies existem na frente da API (ex.: 1 no Railway/Render). Sem isso, atrás de um
+  // proxy, o rate limit enxergaria o IP do proxy como se fosse de todo mundo.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   CLOUDINARY_CLOUD_NAME: optionalString,
   CLOUDINARY_API_KEY: optionalString,
   CLOUDINARY_API_SECRET: optionalString,

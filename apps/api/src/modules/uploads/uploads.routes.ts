@@ -3,11 +3,12 @@ import { Router } from 'express';
 
 import { AppError } from '../../lib/app-error';
 import { signUpload } from '../../lib/cloudinary';
+import { uploadRateLimit } from '../../middlewares/rate-limit';
 import { getUserId, requireAuth } from '../../middlewares/require-auth';
 
 export const uploadsRouter = Router();
 
-uploadsRouter.post('/signature', requireAuth, (req, res) => {
+uploadsRouter.post('/signature', requireAuth, uploadRateLimit, (req, res) => {
   const { kind } = uploadSignatureRequestSchema.parse(req.body);
   const signature = signUpload(getUserId(req), kind);
 

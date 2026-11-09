@@ -11,7 +11,7 @@ import type { z } from 'zod';
 
 import type { Prisma } from '../../generated/prisma/client';
 import { AppError } from '../../lib/app-error';
-import { isOwnUploadUrl } from '../../lib/cloudinary';
+import { deleteUploadedImages, isOwnUploadUrl } from '../../lib/cloudinary';
 import { prisma } from '../../lib/prisma';
 import { notify, unnotify } from '../notifications/notifications.service';
 import { findUserIdByUsername } from '../users/users.service';
@@ -315,7 +315,10 @@ export async function update(userId: string, id: string, { content }: UpdateTwee
 
 export async function remove(userId: string, id: string) {
   await findOwnTweet(userId, id, 'apagar');
+  // as linhas de mídia somem em cascata; os arquivos no Cloudinary, só se a gente apagar
+  const media = await prisma.tweetMedia.findMany({ where: { tweetId: id }, select: { url: true } });
   await prisma.tweet.delete({ where: { id } });
+  deleteUploadedImages(media.map((item) => item.url));
 }
 
 // ---------- interações (todas idempotentes) ----------

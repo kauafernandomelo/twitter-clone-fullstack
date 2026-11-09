@@ -3,6 +3,7 @@ import type { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query
 import type { ReactNode } from 'react';
 
 import { InfiniteList } from '@/components/InfiniteList';
+import { TweetSkeleton } from '@/components/ui/Skeleton';
 
 import { TweetCard } from './TweetCard';
 
@@ -20,6 +21,7 @@ export function TweetList({ query, empty }: TweetListProps) {
       renderItem={(tweet) => <TweetCard tweet={tweet} />}
       empty={empty}
       errorMessage="Não foi possível carregar os posts."
+      skeleton={<TweetSkeleton />}
     />
   );
 }

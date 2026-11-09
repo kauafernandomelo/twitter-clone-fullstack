@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { followRateLimit } from '../../middlewares/rate-limit';
 import { requireAuth } from '../../middlewares/require-auth';
 import * as followsController from '../follows/follows.controller';
 import * as tweetsController from '../tweets/tweets.controller';
@@ -18,5 +19,5 @@ usersRouter.get('/:username/media', tweetsController.listProfileTab('media'));
 usersRouter.get('/:username/likes', tweetsController.listProfileTab('likes'));
 usersRouter.get('/:username/followers', followsController.listFollowers);
 usersRouter.get('/:username/following', followsController.listFollowing);
-usersRouter.post('/:username/follow', followsController.follow);
-usersRouter.delete('/:username/follow', followsController.unfollow);
+usersRouter.post('/:username/follow', followRateLimit, followsController.follow);
+usersRouter.delete('/:username/follow', followRateLimit, followsController.unfollow);

@@ -2,6 +2,7 @@ import { useParams } from 'react-router';
 
 import { InfiniteList } from '@/components/InfiniteList';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { UserRowSkeleton } from '@/components/ui/Skeleton';
 import { TabBar } from '@/components/ui/TabBar';
 import { useFollowers, useFollowing } from '@/features/follows/api';
 import { UserRow } from '@/features/follows/components/UserRow';
@@ -24,6 +25,7 @@ function FollowersList({ username }: { username: string }) {
       query={useFollowers(username)}
       getKey={(user) => user.id}
       renderItem={(user) => <UserRow user={user} />}
+      skeleton={<UserRowSkeleton />}
       empty={
         <Empty
           title="Ainda sem seguidores"
@@ -40,6 +42,7 @@ function FollowingList({ username }: { username: string }) {
       query={useFollowing(username)}
       getKey={(user) => user.id}
       renderItem={(user) => <UserRow user={user} />}
+      skeleton={<UserRowSkeleton />}
       empty={
         <Empty
           title="Ainda não segue ninguém"

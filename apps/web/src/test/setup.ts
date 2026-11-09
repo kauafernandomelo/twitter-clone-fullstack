@@ -1,7 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+
+// findBy*/waitFor esperam até 1 s por padrão. Em máquina carregada a tela às vezes leva mais
+// que isso para aparecer no jsdom, e o teste falha sem nada estar errado: damos mais folga.
+configure({ asyncUtilTimeout: 5000 });
 
 // Tempo real: troca o Socket.IO por um emissor falso controlado pelos testes
 vi.mock('@/lib/socket', () => import('./fake-socket'));

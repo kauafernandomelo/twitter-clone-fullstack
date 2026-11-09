@@ -230,4 +230,24 @@ describe('tempo real', () => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(leaked).toBe(false);
   });
+
+  it('ignora excesso de "digitando" (limite por conexão)', async () => {
+    const { connectAs } = await setup();
+    const ana = await register('ana_souza');
+    await register('bruno');
+    const { id } = await start(ana.agent, 'bruno');
+    const anaSocket = await connectAs('ana_souza');
+    const brunoSocket = await connectAs('bruno');
+
+    let received = 0;
+    brunoSocket.on(MessageEvent.TYPING, () => {
+      received += 1;
+    });
+    for (let i = 0; i < 30; i += 1) {
+      anaSocket.emit(MessageEvent.TYPING, { conversationId: id, isTyping: i % 2 === 0 });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    expect(received).toBe(10);
+  });
 });

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { InfiniteList } from '@/components/InfiniteList';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
+import { UserRowSkeleton } from '@/components/ui/Skeleton';
 import { useConversations } from '@/features/messages/api';
 import { ConversationRow } from '@/features/messages/components/ConversationRow';
 import { NewMessageModal } from '@/features/messages/components/NewMessageModal';
@@ -43,6 +44,7 @@ export function MessagesPage() {
           </div>
         }
         errorMessage="Não foi possível carregar suas conversas."
+        skeleton={<UserRowSkeleton />}
       />
 
       <NewMessageModal open={composing} onClose={() => setComposing(false)} />

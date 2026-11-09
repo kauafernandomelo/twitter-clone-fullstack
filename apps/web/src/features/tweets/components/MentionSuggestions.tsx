@@ -25,7 +25,7 @@ export function MentionSuggestions({
       id={listboxId}
       role="listbox"
       aria-label="Sugestões de menção"
-      className="absolute top-full left-0 z-30 w-full max-w-[350px] overflow-hidden rounded-xl border border-border bg-background py-1 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+      className="absolute top-full left-0 z-30 w-full max-w-[350px] overflow-hidden rounded-xl border border-border bg-background py-1 shadow-popover"
     >
       {users.map((user, index) => (
         <li
