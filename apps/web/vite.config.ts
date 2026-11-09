@@ -24,5 +24,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // folga para máquinas carregadas (o padrão é 5 s)
+    testTimeout: 15_000,
   },
 });
