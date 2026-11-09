@@ -3,12 +3,13 @@ import type { RouteObject } from 'react-router';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from '@/features/auth/components/AuthGuards';
 import { BookmarksPage } from '@/pages/BookmarksPage';
-import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { ChatPage } from '@/pages/ChatPage';
 import { ExplorePage } from '@/pages/ExplorePage';
 import { FollowListPage } from '@/pages/FollowListPage';
 import { HashtagPage } from '@/pages/HashtagPage';
 import { HomePage } from '@/pages/HomePage';
 import { LandingPage } from '@/pages/LandingPage';
+import { MessagesPage } from '@/pages/MessagesPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
@@ -34,12 +35,8 @@ export const routes: RouteObject[] = [
           { path: '/explore', element: <ExplorePage /> },
           { path: '/hashtag/:tag', element: <HashtagPage /> },
           { path: '/notifications', element: <NotificationsPage /> },
-          {
-            path: '/messages',
-            element: (
-              <ComingSoonPage title="Mensagens" description="Conversas privadas em tempo real." />
-            ),
-          },
+          { path: '/messages', element: <MessagesPage /> },
+          { path: '/messages/:conversationId', element: <ChatPage /> },
           { path: '/bookmarks', element: <BookmarksPage /> },
           // rotas estáticas acima têm prioridade sobre este parâmetro
           { path: '/:username', element: <ProfilePage /> },

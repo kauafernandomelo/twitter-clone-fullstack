@@ -1,4 +1,4 @@
-import { differenceInSeconds, format } from 'date-fns';
+import { differenceInSeconds, format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /** Tempo curto estilo Twitter: "agora", "45 s", "12 min", "3 h", "9 de nov", "9 de nov de 2025" */
@@ -18,4 +18,10 @@ export function formatTweetTime(iso: string, now = new Date()) {
 /** Data completa: "14:30 · 9 de nov de 2026" */
 export function formatFullDate(iso: string) {
   return format(new Date(iso), "HH:mm '·' d 'de' MMM 'de' yyyy", { locale: ptBR });
+}
+
+/** Hora de uma mensagem: "14:30" hoje, "9 de nov, 14:30" em outros dias */
+export function formatMessageTime(iso: string) {
+  const date = new Date(iso);
+  return format(date, isToday(date) ? 'HH:mm' : "d 'de' MMM, HH:mm", { locale: ptBR });
 }
