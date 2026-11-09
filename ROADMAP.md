@@ -187,10 +187,17 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 
 ## Fase 10 — Deploy + CI
 
-- [ ] GitHub Actions: lint, typecheck, testes (com Postgres de serviço)
-- [ ] Deploy da API + banco (Railway/Render)
-- [ ] Deploy do front (Vercel)
-- [ ] Variáveis de produção, cookies `Secure` e domínio
+- [x] Em produção a API serve o front compilado: um domínio só (cookies `httpOnly` e WebSocket sem CORS nem `SameSite=None`)
+- [x] Fallback do SPA (`index.html` em qualquer rota que não seja da API), cache longo para assets com hash
+- [x] **Content Security Policy**: scripts só da própria origem + o script de tema pelo hash (calculado do build); imagens e upload só do Cloudinary
+- [x] **Dockerfile** multi-stage (build → runtime enxuto, usuário sem root), migrations aplicadas na inicialização
+- [x] Imagem testada localmente: container subindo contra o Postgres, servindo site + API + WebSocket
+- [x] **GitHub Actions**: lint, formatação, tipos, testes (com Postgres de serviço), build e build da imagem Docker em todo PR
+- [x] `render.yaml` (Blueprint): serviço Docker, health check, segredo JWT gerado, deploy só depois do CI passar
+- [x] `WEB_ORIGIN` automático no Render (`RENDER_EXTERNAL_URL`), `TRUST_PROXY=1`, cookies `Secure` em produção
+- [x] README com funcionalidades, arquitetura e passo a passo de deploy
+- [ ] Criar o banco no Neon e o serviço no Render (precisa das suas contas)
+- [ ] Configurar o Cloudinary e testar o upload real de imagens
 
 ---
 
@@ -226,4 +233,7 @@ Checklist vivo do projeto. Cada fase é desenvolvida numa branch própria (`feat
 - **Listeners de socket independentes da conexão** (Fase 8): uma página aberta direto pela URL registra listeners antes de o layout abrir a conexão (os efeitos do React rodam de dentro para fora). O `lib/socket` guarda os listeners e os liga quando a conexão nasce. Bug encontrado na checagem visual, coberto por teste.
 - **Tema salvo no navegador, não na conta** (Fase 9): é uma preferência do dispositivo (no celular escuro, no PC claro). Dá para sincronizar na conta depois, se fizer falta.
 - **Limpeza do Cloudinary em segundo plano** (Fase 9): se o Cloudinary falhar, a ação da pessoa não falha junto. Imagens enviadas e nunca usadas (post cancelado) continuam lá; limpar isso exigiria um job periódico.
+- **Um serviço só em produção** (Fase 10): front na Vercel com API em outro domínio exigiria cookies `SameSite=None` (de terceiros, cada vez mais bloqueados pelos navegadores) e o WebSocket não autenticaria pelo cookie. Servir tudo pela API resolve isso.
+- **Migrations na inicialização do container** (Fase 10): o plano grátis do Render não tem "pre-deploy command". Com uma instância só, rodar `prisma migrate deploy` antes de subir a API é seguro. Com várias instâncias, o certo seria um passo de release separado.
+- **Uma instância de Socket.IO** (Fase 10): para escalar horizontalmente seria preciso o adapter do Redis, para os eventos chegarem a quem está conectado em outra instância.
 - **`npm audit`** (Fase 0): há 10 avisos moderados no `minimatch` dentro do ESLint 10. É só ferramenta de dev e não vai para produção. O fix sugerido faria downgrade do ESLint, então ficou como está.

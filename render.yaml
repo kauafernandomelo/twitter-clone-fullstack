@@ -1,0 +1,31 @@
+# Blueprint do Render: no painel, "New → Blueprint" e escolha este repositório.
+# O Render cria o serviço a partir deste arquivo e pede os valores marcados com sync: false.
+services:
+  - type: web
+    name: twitter-clone
+    runtime: docker
+    plan: free
+    # não há região no Brasil; Virginia (EUA leste) é a mais próxima
+    region: virginia
+    healthCheckPath: /api/health
+    # só publica depois que o CI do GitHub passar
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # o Render fica na frente da API (1 proxy): necessário para o rate limit ver o IP real
+      - key: TRUST_PROXY
+        value: '1'
+      # gerado pelo próprio Render (segredo aleatório e forte)
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      # string de conexão DIRETA do Neon (sem "-pooler"), com ?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # opcionais: sem elas o app funciona, só o upload de imagens fica desligado
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

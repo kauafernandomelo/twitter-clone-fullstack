@@ -1,0 +1,10 @@
+# só o necessário vai para o contexto do build (mais rápido e sem segredos)
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.local
+apps/api/src/generated
+.git
+.github
+*.md
