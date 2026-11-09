@@ -12,7 +12,7 @@ const page = (items: unknown[]) => ({ status: 200, body: { items, nextCursor: nu
 
 // o compositor da home (o do modal só existe quando o modal abre)
 const composer = () => within(screen.getByRole('form', { name: 'Escrever post' }));
-const getComposer = () => composer().getByRole('textbox', { name: 'Texto do post' });
+const getComposer = () => composer().getByRole('combobox', { name: 'Texto do post' });
 
 describe('timeline da home', () => {
   it('mostra os posts com autor, tempo relativo e conteúdo', async () => {
@@ -86,7 +86,7 @@ describe('criar post', () => {
     await userEvent.click(sidebarButton!);
 
     const dialog = within(await screen.findByRole('dialog', { name: 'Novo post' }));
-    expect(dialog.getByRole('textbox', { name: 'Texto do post' })).toHaveFocus();
+    expect(dialog.getByRole('combobox', { name: 'Texto do post' })).toHaveFocus();
   });
 });
 
