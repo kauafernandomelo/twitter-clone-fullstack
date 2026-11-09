@@ -9,10 +9,10 @@ import { useCurrentUser } from '@/features/auth/api';
 import { useDeleteTweet } from '../api';
 import { EditTweetModal } from './EditTweetModal';
 
-type TweetActionsProps = { tweet: Tweet; onDeleted?: () => void };
+type TweetMenuProps = { tweet: Tweet; onDeleted?: () => void };
 
 // Menu "..." do post. Por enquanto só o autor tem ações (editar/apagar).
-export function TweetActions({ tweet, onDeleted }: TweetActionsProps) {
+export function TweetMenu({ tweet, onDeleted }: TweetMenuProps) {
   const user = useCurrentUser();
   const deleteTweet = useDeleteTweet();
   const [editing, setEditing] = useState(false);
