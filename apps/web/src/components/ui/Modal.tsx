@@ -62,7 +62,9 @@ export function Modal({
       className={cn(
         'm-auto bg-background p-0 text-foreground backdrop:bg-[#5b7083]/40',
         'h-dvh max-h-none w-full max-w-none',
-        'sm:h-auto sm:max-h-[90vh] sm:w-[600px] sm:rounded-2xl',
+        // h-fit (e não h-auto): o <dialog> modal tem top/bottom 0, então com height:auto
+        // ele estica até a altura máxima; fit-content faz ele abraçar o conteúdo.
+        'sm:h-fit sm:max-h-[90vh] sm:w-[600px] sm:rounded-2xl',
         className,
       )}
     >
