@@ -38,7 +38,7 @@ function request(path: string, { body, headers, ...init }: RequestOptions) {
 // Se várias requests tomarem 401 ao mesmo tempo, todas esperam UM único refresh.
 let refreshing: Promise<boolean> | null = null;
 
-function refreshSession() {
+export function refreshSession() {
   refreshing ??= request('/auth/refresh', { method: 'POST' })
     .then((res) => res.ok)
     .catch(() => false)
