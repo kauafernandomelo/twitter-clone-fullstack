@@ -9,6 +9,7 @@ const variants = {
   inverse: 'bg-foreground text-background hover:bg-foreground/90',
   outline: 'border border-border text-brand hover:bg-brand/10',
   secondary: 'border border-border text-foreground hover:bg-foreground/10',
+  danger: 'bg-danger text-white hover:bg-danger/90',
   ghost: 'text-foreground hover:bg-foreground/10',
 } as const;
 
