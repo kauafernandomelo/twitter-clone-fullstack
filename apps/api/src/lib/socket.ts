@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from 'node:http';
 
-import { Server } from 'socket.io';
+import { Server, type Socket } from 'socket.io';
 
 import { env } from '../config/env';
 import { ACCESS_COOKIE } from '../modules/auth/auth.cookies';
@@ -24,7 +24,10 @@ function readCookie(header: string | undefined, name: string) {
  * o navegador o envia no handshake e o JavaScript da página nunca vê o token.
  * Cada usuário entra numa "sala" própria, e a API manda eventos só para ela.
  */
-export function initSocket(httpServer: HttpServer) {
+/** Handler de eventos vindos do cliente, registrado por um módulo (ex.: "digitando" do chat). */
+export type SocketHandler = (socket: Socket, userId: string) => void;
+
+export function initSocket(httpServer: HttpServer, handlers: SocketHandler[] = []) {
   io = new Server(httpServer, { cors: { origin: env.WEB_ORIGIN, credentials: true } });
 
   io.use(async (socket, next) => {
@@ -40,7 +43,9 @@ export function initSocket(httpServer: HttpServer) {
   });
 
   io.on('connection', (socket) => {
-    void socket.join(userRoom(socket.data.userId as string));
+    const userId = socket.data.userId as string;
+    void socket.join(userRoom(userId));
+    handlers.forEach((handler) => handler(socket, userId));
   });
 
   logger.info('Socket.IO pronto');

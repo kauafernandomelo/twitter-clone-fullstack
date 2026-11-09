@@ -5,10 +5,11 @@ import { env } from './config/env';
 import { logger } from './lib/logger';
 import { prisma } from './lib/prisma';
 import { closeSocket, initSocket } from './lib/socket';
+import { registerMessageSocketHandlers } from './modules/messages/messages.socket';
 
 // O servidor HTTP é criado à parte para o Socket.IO dividir a mesma porta com o Express.
 const server = createServer(createApp());
-initSocket(server);
+initSocket(server, [registerMessageSocketHandlers]);
 
 server.listen(env.PORT, () => {
   logger.info(`🚀 API rodando em http://localhost:${env.PORT}`);
